@@ -15,6 +15,6 @@ section {
     src: url("/fonts/Poppins-Regular.ttf");
 }
 
-button, h2 {
+button, h2, p, main {
     font-family: "Poppins", sans-serif;
 }
