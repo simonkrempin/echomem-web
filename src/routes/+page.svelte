@@ -1,7 +1,23 @@
 <script lang="ts">
+    import Cookies from "js-cookie";
+    import {goto} from "$app/navigation";
+    import ComputerIcon from "$lib/icons/computer.svelte";
+    import GoogleDriveIcon from "$lib/icons/google-drive.svelte";
+    import AccountIcon from "$lib/icons/account.svelte";
+
     const selectDirectory = (dirType: string) => {
-        console.log(dirType);
+        Cookies.set("store-type", dirType)
+
+        if (dirType === "local") {
+            goto("/explorer");
+        } else if (dirType === "google-drive" || dirType === "account") {
+            goto("/login");
+        } else {
+            throw new Error("invalid store type");
+        }
     }
+
+    const ICON_SIZE = 50;
 </script>
 
 
@@ -9,16 +25,16 @@
     Bevor du forfährst, musst du einen Ort zu speichern auswählen.
     <div class="button-container">
         <button on:click={() => selectDirectory("local")}>
-            <div>ICON</div>
+            <ComputerIcon height={ICON_SIZE} width={ICON_SIZE}/>
             Lokal speichern
         </button>
         <button on:click={() => selectDirectory("google-drive")}>
-            <div>ICON</div>
+            <GoogleDriveIcon height={ICON_SIZE} width={ICON_SIZE}/>
             Speichern in Google-Drive
         </button>
         <div class="best-offer">
             <button on:click={() => selectDirectory("account")}>
-                <div>ICON</div>
+                <AccountIcon height={ICON_SIZE} width={ICON_SIZE}/>
                 Echomem Account
             </button>
             Meisten Vorteile
@@ -48,6 +64,10 @@
         border: none;
         border-radius: 16px;
         transition: all 0.2s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 
     button:hover {

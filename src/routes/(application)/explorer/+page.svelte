@@ -1,15 +1,26 @@
 <script lang="ts">
     import type {PageServerData} from './$types';
     import FolderActive from '$lib/icons/folder-active.svelte';
+    import Cookies from "js-cookie";
+    import {goto} from "$app/navigation";
 
     export let data: PageServerData;
 
     const onDeckClicked = (deckId: string) => {
         console.log(deckId);
     }
+
+    const onAccountClicked = () => {
+        Cookies.remove("store-type");
+        Cookies.remove("session");
+        goto("/");
+    }
 </script>
 
 <section>
+    <div class="account-bar">
+        <button class="account-button" on:click={onAccountClicked}></button>
+    </div>
     {#if data?.decks}
         <div id="decks">
             {#each data.decks as deck (deck.id)}
@@ -90,5 +101,22 @@
 
     .list-header-item:hover {
         background-color: #c4c4c4;
+    }
+
+    .account-bar {
+        display: flex;
+        justify-content: right;
+        width: 100%;
+    }
+
+    .account-button {
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+    }
+
+    .account-button:hover {
+        cursor: pointer;
     }
 </style>

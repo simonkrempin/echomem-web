@@ -15,6 +15,16 @@ section {
     src: url("/fonts/Poppins-Regular.ttf");
 }
 
-button, h2, p, main {
+button, h2, p, main, input {
     font-family: "Poppins", sans-serif;
+}
+
+.text-button {
+    border: none;
+    background-color: transparent;
+    transition: all 0.2s ease-in-out;
+}
+
+.text-button:hover {
+    cursor: pointer;
 }
