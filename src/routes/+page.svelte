@@ -4,17 +4,11 @@
     import ComputerIcon from "$lib/icons/computer.svelte";
     import GoogleDriveIcon from "$lib/icons/google-drive.svelte";
     import AccountIcon from "$lib/icons/account.svelte";
+    import {directoryFactory} from "../services/directory/directory-factory";
 
     const selectDirectory = (dirType: string) => {
-        Cookies.set("store-type", dirType)
-
-        if (dirType === "local") {
-            goto("/explorer");
-        } else if (dirType === "google-drive" || dirType === "account") {
-            goto("/login");
-        } else {
-            throw new Error("invalid store type");
-        }
+        const directory = directoryFactory(dirType);
+        directory.connectToDirectory();
     }
 
     const ICON_SIZE = 50;

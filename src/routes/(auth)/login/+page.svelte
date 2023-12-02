@@ -1,20 +1,32 @@
 <script>
     import WithTitle from "../../../components/with-title.svelte";
     import SeparatorWithText from "../../../components/seperator-with-text.svelte";
+    import Cookies from "js-cookie";
+    import {goto} from "$app/navigation";
+
+    const onLoginClicked = async () => {
+        Cookies.set("session", "78234z5kluiahfhilahaufilhdil");
+        requestAnimationFrame(() => goto("/explorer"));
+    }
 </script>
 
 <main>
     <section>
+        <h2>Anmelden</h2>
         <form>
-            <WithTitle title="E-Mail">
-                <input>
-            </WithTitle>
-            <WithTitle title="Password">
-                <input>
-            </WithTitle>
-            <button>Anmelden</button>
-            <SeparatorWithText text="oder"/>
-            <a href="/register">Registrieren</a>
+            <div>
+                <WithTitle title="E-Mail">
+                    <input type="email">
+                </WithTitle>
+                <WithTitle title="Password">
+                    <input type="password">
+                </WithTitle>
+            </div>
+            <div>
+                <button on:click={onLoginClicked}>Anmelden</button>
+                <SeparatorWithText text="oder"/>
+                <a href="/register">Registrieren</a>
+            </div>
         </form>
         <div class="socials">
             <button class="social-button"></button>
@@ -48,17 +60,24 @@
     form {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        justify-content: space-between;
         background-color: #c4c4c4;
-        padding: 52px 24px;
+        padding: 26px 24px;
         border-radius: 8px;
         height: calc(100% - 52px);
         width: calc(100% - 48px);
-        align-items: center;
     }
 
-    form > button {
-        padding: 8px 16px;
+    form > div {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    form > div > button {
+        padding: 12px 16px;
     }
 
     .social-button {
@@ -70,12 +89,7 @@
         border: none;
         border-radius: 8px;
         width: 100%;
-    }
-
-    input {
-        border: 1px solid #f5f5f5;
-        border-radius: 8px;
-        padding: 12px 4px;
+        font-size: 16px;
     }
 
     .socials {
@@ -88,5 +102,6 @@
     a {
         text-decoration: none;
         color: black;
+        font-size: 14px;
     }
 </style>

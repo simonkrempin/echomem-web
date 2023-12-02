@@ -1,6 +1,8 @@
 <script lang="ts">
     import type {PageServerData} from './$types';
     import FolderActive from '$lib/icons/folder-active.svelte';
+    import AddFolderDialog from "../../../dialogs/add-folder-dialog.svelte";
+    import AddIcon from "$lib/icons/add.svelte";
     import Cookies from "js-cookie";
     import {goto} from "$app/navigation";
 
@@ -15,6 +17,11 @@
         Cookies.remove("session");
         goto("/");
     }
+
+    let showAddDeckDialog = false;
+    const onDeckAddClicked = () => {
+        showAddDeckDialog = true;
+    }
 </script>
 
 <section>
@@ -25,10 +32,14 @@
         <div id="decks">
             {#each data.decks as deck (deck.id)}
                 <button class="deck" on:click={() => onDeckClicked(deck.id)}>
-                    <FolderActive/>
+                    <FolderActive height={60} width={60}/>
                     {deck.name}
                 </button>
             {/each}
+            <button class="deck" on:click={onDeckAddClicked}>
+                <AddIcon height={60} width={60}/>
+                Deck hinzufügen
+            </button>
         </div>
     {/if}
     {#if data?.cards}
@@ -49,6 +60,8 @@
     {/if}
 </section>
 
+<AddFolderDialog bind:show={showAddDeckDialog} title="Deck hinzufügen" folderId="folderID"/>
+
 <style>
     section {
         padding: 0 16px;
@@ -59,12 +72,22 @@
         width: 100%;
     }
 
+    #decks {
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+    }
+
     .deck {
         border: none;
         background: #f5f5f5;
         border-radius: 16px;
-        width: 240px;
-        height: 240px;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 
     #cards {
@@ -114,9 +137,5 @@
         height: 50px;
         border: none;
         border-radius: 50%;
-    }
-
-    .account-button:hover {
-        cursor: pointer;
     }
 </style>

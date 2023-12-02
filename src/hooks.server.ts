@@ -13,6 +13,8 @@ const storeTypeNeedsSession = (storeType: string): boolean => {
 export const handle: Handle = async ({ event, resolve }) => {
     const storeType = event.cookies.get("store-type");
 
+    console.log(event.url.pathname);
+
     if (!storeType) {
         if (event.url.pathname === "/") {
             return resolve(event);

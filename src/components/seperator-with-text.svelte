@@ -18,7 +18,7 @@
     hr {
         flex: 1;
         background-color: black;
-        height: 2px;
+        height: 1px;
         border: none;
     }
 

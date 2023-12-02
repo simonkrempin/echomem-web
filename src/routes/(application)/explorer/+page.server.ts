@@ -1,28 +1,30 @@
 import type {PageServerLoad} from './$types';
 
-interface Deck {
-    id: string;
-    name: string;
-}
+export const load: PageServerLoad = async ({ cookies }) => {
+    const storeType = cookies.get("store-type");
 
-interface Card {
-    id: string;
-    front: string;
-    back: string;
-}
-
-export const load: PageServerLoad = async () => {
-    const data: { decks: Deck[], cards: Card[] } = {
-        decks: [{
-            id: "lasdfaufahudfliasdfhl",
-            name: "Deck 1",
-        }],
-        cards: [{
-            id: "slöadfjklöasdjf",
-            front: "this is the front",
-            back: "this is the back"
-        }]
-    };
-
-    return data;
+    switch(storeType) {
+        case "local":
+            return {
+                decks: [],
+                cards: []
+            };
+        case "google-drive":
+            return {
+                decks: [],
+                cards: []
+            };
+        case "account":
+            return {
+                decks: [{
+                    id: "lasdfaufahudfliasdfhl",
+                    name: "Deck 1",
+                }],
+                cards: [{
+                    id: "slöadfjklöasdjf",
+                    front: "this is the front",
+                    back: "this is the back"
+                }]
+            }
+    }
 };
