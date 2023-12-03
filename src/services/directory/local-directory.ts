@@ -23,6 +23,10 @@ export class LocalDirectory extends Directory {
             if (!this._database.objectStoreNames.contains(this.deckStore)) {
                 this._database.createObjectStore(this.deckStore, {keyPath: "id"});
             }
+
+            if (!this._database.objectStoreNames.contains(this.cardStore)) {
+                this._database.createObjectStore(this.cardStore, {keyPath: "id"});
+            }
         }
 
         openRequest.onsuccess = (event) => {

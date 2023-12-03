@@ -1,12 +1,37 @@
 <script lang="ts">
+    import {onMount} from "svelte";
     import type {PageServerData} from './$types';
-    import FolderActive from '$lib/icons/folder-active.svelte';
-    import AddFolderDialog from "../../../dialogs/add-folder-dialog.svelte";
+    import FolderIcon from '$lib/icons/folder-active.svelte';
+    import DownloadIcon from "$lib/icons/download.svelte";
+    import AddFolderDialog from "../../../../dialogs/add-folder-dialog.svelte";
     import AddIcon from "$lib/icons/add.svelte";
     import Cookies from "js-cookie";
     import {goto} from "$app/navigation";
+    import type {Card} from "../../../../models/card";
+    import type {Deck} from "../../../../models/deck";
 
     export let data: PageServerData;
+    let cards: Promise<Card[]> | undefined = undefined;
+    let decks: Promise<Deck[]> | undefined = undefined;
+    const cookie: string | undefined = Cookies.get("store-type");
+
+    onMount(async () => {
+        cards = new Promise((resolve, reject) => {
+            if (cookie === "local") {
+                resolve(data.cards ?? []);
+            } else {
+            }
+            resolve([]);
+        });
+        decks = new Promise((resolve, reject) => {
+            if (cookie === "local") {
+                resolve(data.decks ?? []);
+            } else {
+
+            }
+            resolve([]);
+        });
+    });
 
     const onDeckClicked = (deckId: string) => {
         console.log(deckId);
@@ -22,17 +47,24 @@
     const onDeckAddClicked = () => {
         showAddDeckDialog = true;
     }
+
+    const onDownloadDeckClicked = () => {
+
+    }
 </script>
 
 <section>
     <div class="account-bar">
+        <button class="icon-button" on:click={onDownloadDeckClicked}>
+            <DownloadIcon />
+        </button>
         <button class="account-button" on:click={onAccountClicked}></button>
     </div>
     {#if data?.decks}
         <div id="decks">
             {#each data.decks as deck (deck.id)}
                 <button class="deck" on:click={() => onDeckClicked(deck.id)}>
-                    <FolderActive height={60} width={60}/>
+                    <FolderIcon height={60} width={60}/>
                     {deck.name}
                 </button>
             {/each}

@@ -7,4 +7,5 @@ export interface Deck {
 export interface DeckDTO {
     name?: string;
     parentDeck?: string;
+    id?: string;
 }
