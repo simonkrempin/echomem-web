@@ -3,16 +3,19 @@ import type {Deck} from "../../../../models/deck";
 import type {Card} from "../../../../models/card";
 
 interface ReturnData {
-    cards: Card[],
-    decks: Deck[]
+    deckName: string;
+    cards: Card[];
+    decks: Deck[];
 }
 
-export const load: PageServerLoad = async ({cookies}): Promise<ReturnData> => {
+export const load: PageServerLoad = async ({cookies, url}): Promise<ReturnData> => {
     const storeType = cookies.get("store-type");
+    const deckName = url.pathname.split("/").at(-1)!;
 
     switch (storeType) {
         case "account":
             return {
+                deckName,
                 decks: [{
                     id: "lasdfaufahudfliasdfhl",
                     name: "Deck 1",
@@ -27,6 +30,7 @@ export const load: PageServerLoad = async ({cookies}): Promise<ReturnData> => {
             }
         default:
             return {
+                deckName,
                 cards: [],
                 decks: []
             }

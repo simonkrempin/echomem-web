@@ -4,11 +4,14 @@
     import ComputerIcon from "$lib/icons/computer.svelte";
     import GoogleDriveIcon from "$lib/icons/google-drive.svelte";
     import AccountIcon from "$lib/icons/account.svelte";
-    import {directoryFactory} from "../services/directory/directory-factory";
 
     const selectDirectory = (dirType: string) => {
-        const directory = directoryFactory(dirType);
-        directory.connectToDirectory();
+        if (dirType === "local") {
+            Cookies.set("store-type", "local");
+            goto("/explorer")
+        } else {
+            goto("/login");
+        }
     }
 
     const ICON_SIZE = 50;

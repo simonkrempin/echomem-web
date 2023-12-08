@@ -1,25 +1,26 @@
 <script lang="ts">
     import WithTitle from "../components/with-title.svelte";
     import CloseIcon from "$lib/icons/close.svelte";
-    // import {getDirectory} from "../services/directory/directory-factory";
+    import {createDeck} from "../services/directory/directory";
+    import {generateRandomString} from "../utils/generateRandomString";
 
     export let show: boolean;
     export let title: string = "Dialog";
-    // export let folderId: string;
+    export let folderId: string;
 
     let folderName: string = "";
 
     const onCloseClicked = () => {
+        folderName = "";
         show = false;
     };
 
     const onSaveClicked = () => {
-        // const directory = getDirectory();
-        // directory.createDeck({
-        //     name: folderName,
-        //     parentDeck: folderId,
-        //     id: "asdfasdfasdfasdf"
-        // });
+        createDeck({
+            name: folderName,
+            parentDeck: folderId,
+            id: generateRandomString(8)
+        });
         onCloseClicked();
     }
 

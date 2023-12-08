@@ -1,5 +1,4 @@
 <script lang="ts">
-    import {onMount} from "svelte";
     import type {PageServerData} from './$types';
     import FolderIcon from '$lib/icons/folder-active.svelte';
     import DownloadIcon from "$lib/icons/download.svelte";
@@ -9,32 +8,38 @@
     import {goto} from "$app/navigation";
     import type {Card} from "../../../../models/card";
     import type {Deck} from "../../../../models/deck";
+    import {getCards, getDecks} from "../../../../services/directory/directory";
 
     export let data: PageServerData;
-    let cards: Promise<Card[]> | undefined = undefined;
-    let decks: Promise<Deck[]> | undefined = undefined;
+
     const cookie: string | undefined = Cookies.get("store-type");
 
-    onMount(async () => {
-        cards = new Promise((resolve, reject) => {
-            if (cookie === "local") {
-                resolve(data.cards ?? []);
-            } else {
-            }
-            resolve([]);
-        });
-        decks = new Promise((resolve, reject) => {
-            if (cookie === "local") {
-                resolve(data.decks ?? []);
-            } else {
+    $: deckQuery = new Promise((resolve, reject) => {
+        if (cookie === "local") {
+            getDecks(data.deckName)
+                .then(result => resolve(result))
+                .catch(error => reject(error));
+        } else {
+            resolve(data.decks);
+        }
+    }) as Promise<Deck[]>;
+    $: cardQuery = new Promise((resolve, reject) => {
+        if (cookie === "local") {
+            getCards(data.deckName)
+                .then((result) => resolve(result))
+                .catch((error) => reject(error));
+        } else {
+            resolve(data.cards);
+        }
+    }) as Promise<Card[]>;
 
-            }
-            resolve([]);
-        });
-    });
+    // const fetchData = (slug: string) => {
+    //     cardQuery =
+    //     deckQuery
+    // }
 
     const onDeckClicked = (deckId: string) => {
-        console.log(deckId);
+        goto(`/explorer/${deckId}`)
     }
 
     const onAccountClicked = () => {
@@ -56,13 +61,16 @@
 <section>
     <div class="account-bar">
         <button class="icon-button" on:click={onDownloadDeckClicked}>
-            <DownloadIcon />
+            <DownloadIcon/>
         </button>
         <button class="account-button" on:click={onAccountClicked}></button>
     </div>
-    {#if data?.decks}
-        <div id="decks">
-            {#each data.decks as deck (deck.id)}
+
+    <div id="decks">
+        {#await deckQuery}
+            Loading...
+        {:then decks}
+            {#each decks as deck (deck.id)}
                 <button class="deck" on:click={() => onDeckClicked(deck.id)}>
                     <FolderIcon height={60} width={60}/>
                     {deck.name}
@@ -72,27 +80,35 @@
                 <AddIcon height={60} width={60}/>
                 Deck hinzufügen
             </button>
+        {:catch error}
+            Error on fetching data
+        {/await}
+
+    </div>
+
+    <div id="cards">
+        <div class="list-header">
+            <button class="list-header-item">Front</button>
+            <button class="list-header-item">Back</button>
+            <button class="list-header-item">Next Repetition</button>
         </div>
-    {/if}
-    {#if data?.cards}
-        <div id="cards">
-            <div class="list-header">
-                <button class="list-header-item">Front</button>
-                <button class="list-header-item">Back</button>
-                <button class="list-header-item">Next Repetition</button>
-            </div>
-            <hr/>
-            {#each data.cards as card (card.id)}
+        <hr/>
+        {#await cardQuery}
+            Loading...
+        {:then cards}
+            {#each cards as card (card.id)}
                 <div class="list-item">
                     <p>{card.front}</p>
                     <p>{card.back}</p>
                 </div>
             {/each}
-        </div>
-    {/if}
+        {:catch error}
+            Error on fetching data
+        {/await}
+    </div>
 </section>
 
-<AddFolderDialog bind:show={showAddDeckDialog} title="Deck hinzufügen" folderId="folderID"/>
+<AddFolderDialog bind:show={showAddDeckDialog} title="Deck hinzufügen" folderId={data.deckName}/>
 
 <style>
     section {
@@ -108,6 +124,7 @@
         display: flex;
         flex-direction: row;
         gap: 12px;
+        min-height: 200px;
     }
 
     .deck {

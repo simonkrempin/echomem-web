@@ -71,8 +71,8 @@
     }
 
     button {
-        padding: 16px 8px;
-        border-radius: 8px;
+        padding: 12px 16px;
+        border-radius: 50px;
         border: none;
         text-align: left;
         display: flex;

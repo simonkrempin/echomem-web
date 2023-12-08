@@ -1,13 +1,145 @@
-import type {Deck, DeckDTO} from "../../models/deck";
+import console from "console";
+import Cookies from "js-cookie";
 import type {Card, CardDTO} from "../../models/card";
-import {DirectoryCache} from "./directory-cache";
+import type {Deck, DeckDTO} from "../../models/deck";
 
-export abstract class Directory {
-    protected cacheInstance: DirectoryCache = new DirectoryCache();
-    public abstract connectToDirectory(): Promise<void>;
-    public abstract disconnectDirectory(): Promise<void>;
-    public abstract getDecks(deckId: string): Promise<Deck[]>;
-    public abstract getCards(deckId: string): Promise<Card[]>;
-    public abstract createDeck(deckToCreate: DeckDTO): Promise<void>;
-    public abstract createCard(cardToCreate: CardDTO): Promise<void>;
+enum Indexes {
+    id = "id",
+    parentDeck = "parentDeck"
+}
+
+const DECK_STORE = "deckStore";
+const CARD_STORE = "cardStore";
+
+let _databasePromise: Promise<boolean> | null;
+let _database: IDBDatabase | null;
+const cardCache: Record<string, Card[]> = {};
+const deckCache: Record<string, Deck[]> = {};
+
+
+export const connectToDirectory = async (): Promise<void> => {
+    const openRequest = indexedDB.open("echomemDB", 1);
+
+    openRequest.onupgradeneeded = (event) => {
+        _database = (event.target as IDBOpenDBRequest).result;
+
+        if (!_database.objectStoreNames.contains(DECK_STORE)) {
+            const store = _database.createObjectStore(DECK_STORE, {keyPath: "id"});
+            store.createIndex(Indexes.parentDeck, Indexes.parentDeck, { unique: false });
+        }
+
+        if (!_database.objectStoreNames.contains(CARD_STORE)) {
+            const store = _database.createObjectStore(CARD_STORE, {keyPath: "id"});
+            store.createIndex(Indexes.parentDeck, Indexes.parentDeck, { unique: false });
+        }
+    }
+
+    _databasePromise = new Promise((resolve, reject) => {
+        openRequest.onerror = (event) => {
+            console.error("Error", (event.target as IDBOpenDBRequest).error);
+            reject(false);
+        }
+
+        openRequest.onsuccess = (event) => {
+            Cookies.set("store-type", "local");
+            _database = (event.target as IDBOpenDBRequest).result;
+            resolve(true);
+        }
+    });
+}
+
+export const getDatabase = async (): Promise<IDBDatabase> => {
+    if (!_database) {
+        if (!_databasePromise) {
+            await connectToDirectory();
+        }
+        await _databasePromise;
+    }
+
+    return _database!; // if this would be null, then an error would be thrown before
+}
+
+const queryDB = async (storeKey: string, storeIndex: string, queryValue: string): Promise<IDBRequest> => {
+    const db = await getDatabase();
+    const transaction = db.transaction([storeKey], "readonly");
+    const store = transaction.objectStore(storeKey);
+    const index = store.index(storeIndex);
+    return index.getAll(queryValue);
+}
+
+export const getDecks = async (deckId: string): Promise<Deck[]> => {
+    const cachedData = deckCache[deckId];
+    if (cachedData) {
+        return cachedData;
+    }
+
+    const request = await queryDB(DECK_STORE, Indexes.parentDeck, deckId)
+
+    return new Promise((resolve, reject) => {
+        request.onsuccess = (event) => {
+            resolve((event.target! as IDBRequest).result);
+        }
+
+        request.onerror = () => {
+            console.error("Error in retrieving data", request.error);
+            reject();
+        }
+    });
+}
+
+export const getCards = async (deckId: string): Promise<Card[]> => {
+    const cachedData = cardCache[deckId];
+    if (cachedData) {
+        return cachedData;
+    }
+
+    const request = await queryDB(CARD_STORE, Indexes.parentDeck, deckId);
+
+    return await new Promise((resolve, reject) => {
+        request.onsuccess = () => {
+            resolve(request.result);
+        }
+
+        request.onerror = () => {
+            console.error("Error in retrieving data", request.error);
+            reject();
+        }
+    });
+}
+
+export const createDeck = async (deckToCreate:DeckDTO): Promise<void> => {
+    const db = await getDatabase();
+    const transaction = db.transaction([DECK_STORE], "readwrite");
+    const store = transaction.objectStore(DECK_STORE);
+    const request = store.add(deckToCreate);
+
+    return new Promise((resolve, reject) => {
+        request.onsuccess = () => {
+            delete deckCache[deckToCreate.parentDeck!];
+            resolve();
+        }
+        request.onerror = () => {
+            console.log("Error in creating deck", request.error);
+            reject();
+        }
+    });
+}
+
+export const createCard = async (cardToCreate: CardDTO): Promise<void> => {
+    const db = await getDatabase();
+    const transaction = db.transaction([CARD_STORE], "readwrite");
+    const store = transaction.objectStore(CARD_STORE);
+    const request = store.add(cardToCreate);
+
+    return new Promise((resolve) => {
+        request.onsuccess = () => {
+            delete cardCache[cardToCreate.deckId!];
+            resolve();
+        }
+
+        request.onerror = () => {
+            console.error("Error in creating deck", request.error);
+            throw new Error("weren't able to create card");
+        }
+    });
 }
