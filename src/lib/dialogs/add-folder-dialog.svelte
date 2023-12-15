@@ -1,8 +1,8 @@
 <script lang="ts">
     import WithTitle from "../components/with-title.svelte";
     import CloseIcon from "$lib/icons/close.svelte";
-    import {createDeck} from "../services/directory/directory";
     import {generateRandomString} from "../utils/generateRandomString";
+    import {deckStore} from "$lib/stores/deck-store";
 
     export let show: boolean;
     export let title: string = "Dialog";
@@ -16,11 +16,11 @@
     };
 
     const onSaveClicked = () => {
-        createDeck({
+        deckStore.add({
             name: folderName,
             parentDeck: folderId,
             id: generateRandomString(8)
-        });
+        })
         onCloseClicked();
     }
 
@@ -29,7 +29,7 @@
             return;
         }
 
-        switch(event.key) {
+        switch (event.key) {
             case "Escape":
                 event.preventDefault();
                 onCloseClicked();
@@ -42,7 +42,7 @@
     }
 </script>
 
-<svelte:window on:keydown={onKeyDown} />
+<svelte:window on:keydown={onKeyDown}/>
 
 {#if show}
     <div class="backdrop">

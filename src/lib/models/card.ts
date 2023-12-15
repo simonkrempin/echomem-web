@@ -9,4 +9,5 @@ export interface CardDTO {
     front?: string;
     back?: string;
     deckId?: string;
+    id?: string;
 }

@@ -1,6 +1,6 @@
 <script>
-    import WithTitle from "../../../components/with-title.svelte";
-    import SeparatorWithText from "../../../components/seperator-with-text.svelte";
+    import WithTitle from "$lib/components/with-title.svelte";
+    import SeparatorWithText from "$lib/components/seperator-with-text.svelte";
     import Cookies from "js-cookie";
     import {goto} from "$app/navigation";
 

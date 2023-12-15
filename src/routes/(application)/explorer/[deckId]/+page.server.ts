@@ -1,6 +1,6 @@
 import type {PageServerLoad} from './$types';
-import type {Deck} from "../../../../models/deck";
-import type {Card} from "../../../../models/card";
+import type {Deck} from "$lib/models/deck";
+import type {Card} from "$lib/models/card";
 
 interface ReturnData {
     deckName: string;

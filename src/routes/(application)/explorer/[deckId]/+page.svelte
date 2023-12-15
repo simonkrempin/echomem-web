@@ -1,45 +1,49 @@
 <script lang="ts">
-    import type {PageServerData} from './$types';
+    // import type {PageServerData} from './$types';
     import FolderIcon from '$lib/icons/folder-active.svelte';
     import DownloadIcon from "$lib/icons/download.svelte";
-    import AddFolderDialog from "../../../../dialogs/add-folder-dialog.svelte";
     import AddIcon from "$lib/icons/add.svelte";
+    import AddFolderDialog from "$lib/dialogs/add-folder-dialog.svelte";
+    import AddCardDialog from "$lib/dialogs/add-card-dialog.svelte";
     import Cookies from "js-cookie";
     import {goto} from "$app/navigation";
-    import type {Card} from "../../../../models/card";
-    import type {Deck} from "../../../../models/deck";
-    import {getCards, getDecks} from "../../../../services/directory/directory";
+    import {page} from "$app/stores";
+    import {deckStore} from "$lib/stores/deck-store";
+    import {cardStore} from "$lib/stores/card-store";
+    import {onDestroy} from "svelte";
+    import type {Deck} from "$lib/models/deck";
+    import type {Unsubscriber} from "svelte/store";
+    import type {Card} from "$lib/models/card";
 
-    export let data: PageServerData;
+    // export let data: PageServerData;
 
-    const cookie: string | undefined = Cookies.get("store-type");
+    $: deckId = $page.params.deckId;
 
-    $: deckQuery = new Promise((resolve, reject) => {
-        if (cookie === "local") {
-            getDecks(data.deckName)
-                .then(result => resolve(result))
-                .catch(error => reject(error));
-        } else {
-            resolve(data.decks);
+    let deckQuery: Promise<Deck[]>;
+    let cardQuery: Promise<Card[]>;
+    let unsubscribeDeckStore: Unsubscriber;
+    let unsubscribeCardStore: Unsubscriber;
+
+    $: {
+        unsubscribeDeckStore = deckStore.subscribe(value => {
+            deckQuery = deckStore.get(deckId);
+        });
+        unsubscribeCardStore = cardStore.subscribe(() => {
+            cardQuery = cardStore.get(deckId)
+        })
+    }
+
+    onDestroy(() => {
+        if (unsubscribeDeckStore) {
+            unsubscribeDeckStore();
         }
-    }) as Promise<Deck[]>;
-    $: cardQuery = new Promise((resolve, reject) => {
-        if (cookie === "local") {
-            getCards(data.deckName)
-                .then((result) => resolve(result))
-                .catch((error) => reject(error));
-        } else {
-            resolve(data.cards);
+        if (unsubscribeCardStore) {
+            unsubscribeCardStore();
         }
-    }) as Promise<Card[]>;
-
-    // const fetchData = (slug: string) => {
-    //     cardQuery =
-    //     deckQuery
-    // }
+    });
 
     const onDeckClicked = (deckId: string) => {
-        goto(`/explorer/${deckId}`)
+        goto(`/explorer/${ deckId }`)
     }
 
     const onAccountClicked = () => {
@@ -49,8 +53,13 @@
     }
 
     let showAddDeckDialog = false;
-    const onDeckAddClicked = () => {
+    const onAddDeckClicked = () => {
         showAddDeckDialog = true;
+    }
+
+    let showAddCardDialog = false;
+    const onAddCardClicked = () => {
+        showAddCardDialog = true;
     }
 
     const onDownloadDeckClicked = () => {
@@ -76,7 +85,7 @@
                     {deck.name}
                 </button>
             {/each}
-            <button class="deck" on:click={onDeckAddClicked}>
+            <button class="deck" on:click={onAddDeckClicked}>
                 <AddIcon height={60} width={60}/>
                 Deck hinzufügen
             </button>
@@ -100,15 +109,21 @@
                 <div class="list-item">
                     <p>{card.front}</p>
                     <p>{card.back}</p>
+                    <p>Datum</p>
                 </div>
             {/each}
         {:catch error}
             Error on fetching data
         {/await}
+
+        <button class="add-card-fab" on:click={onAddCardClicked}>
+            <AddIcon />
+        </button>
     </div>
 </section>
 
-<AddFolderDialog bind:show={showAddDeckDialog} title="Deck hinzufügen" folderId={data.deckName}/>
+<AddFolderDialog bind:show={showAddDeckDialog} title="Deck hinzufügen" folderId={deckId}/>
+<AddCardDialog bind:show={showAddCardDialog} title="Karte hinzufügen" folderId={deckId} />
 
 <style>
     section {
@@ -144,10 +159,16 @@
         border-radius: 16px;
         width: 100%;
         flex: 1;
+        position: relative;
     }
 
     .list-item {
         display: flex;
+        padding: 0 8px;
+    }
+
+    .list-item > p {
+        flex: 1;
     }
 
     hr {
@@ -156,7 +177,7 @@
 
     .list-header {
         display: flex;
-        width: 100%;
+        width: calc(100% - 16px);
         gap: 20px;
         padding: 8px;
     }
@@ -186,5 +207,19 @@
         height: 50px;
         border: none;
         border-radius: 50%;
+    }
+
+    .add-card-fab {
+        border: none;
+        border-radius: 12px;
+        background-color: aquamarine;
+        height: 52px;
+        width: 52px;
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 </style>

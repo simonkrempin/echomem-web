@@ -1,11 +1,12 @@
 import console from "console";
 import Cookies from "js-cookie";
-import type {Card, CardDTO} from "../../models/card";
-import type {Deck, DeckDTO} from "../../models/deck";
+import type {Card, CardDTO} from "../models/card";
+import type {Deck, DeckDTO} from "../models/deck";
 
 enum Indexes {
     id = "id",
-    parentDeck = "parentDeck"
+    parentDeck = "parentDeck",
+    deckId = "deckId",
 }
 
 const DECK_STORE = "deckStore";
@@ -17,7 +18,7 @@ const cardCache: Record<string, Card[]> = {};
 const deckCache: Record<string, Deck[]> = {};
 
 
-export const connectToDirectory = async (): Promise<void> => {
+export const connectToIDB = async (): Promise<void> => {
     const openRequest = indexedDB.open("echomemDB", 1);
 
     openRequest.onupgradeneeded = (event) => {
@@ -30,7 +31,7 @@ export const connectToDirectory = async (): Promise<void> => {
 
         if (!_database.objectStoreNames.contains(CARD_STORE)) {
             const store = _database.createObjectStore(CARD_STORE, {keyPath: "id"});
-            store.createIndex(Indexes.parentDeck, Indexes.parentDeck, { unique: false });
+            store.createIndex(Indexes.deckId, Indexes.deckId, { unique: false });
         }
     }
 
@@ -51,7 +52,7 @@ export const connectToDirectory = async (): Promise<void> => {
 export const getDatabase = async (): Promise<IDBDatabase> => {
     if (!_database) {
         if (!_databasePromise) {
-            await connectToDirectory();
+            await connectToIDB();
         }
         await _databasePromise;
     }
@@ -64,6 +65,7 @@ const queryDB = async (storeKey: string, storeIndex: string, queryValue: string)
     const transaction = db.transaction([storeKey], "readonly");
     const store = transaction.objectStore(storeKey);
     const index = store.index(storeIndex);
+    window.console.log(index);
     return index.getAll(queryValue);
 }
 
@@ -74,7 +76,6 @@ export const getDecks = async (deckId: string): Promise<Deck[]> => {
     }
 
     const request = await queryDB(DECK_STORE, Indexes.parentDeck, deckId)
-
     return new Promise((resolve, reject) => {
         request.onsuccess = (event) => {
             resolve((event.target! as IDBRequest).result);
@@ -93,7 +94,8 @@ export const getCards = async (deckId: string): Promise<Card[]> => {
         return cachedData;
     }
 
-    const request = await queryDB(CARD_STORE, Indexes.parentDeck, deckId);
+    const request = await queryDB(CARD_STORE, Indexes.deckId, deckId);
+    window.console.log(request);
 
     return await new Promise((resolve, reject) => {
         request.onsuccess = () => {
@@ -107,10 +109,8 @@ export const getCards = async (deckId: string): Promise<Card[]> => {
     });
 }
 
-export const createDeck = async (deckToCreate:DeckDTO): Promise<void> => {
-    const db = await getDatabase();
-    const transaction = db.transaction([DECK_STORE], "readwrite");
-    const store = transaction.objectStore(DECK_STORE);
+export const createDeck = async (deckToCreate: DeckDTO): Promise<void> => {
+    const store = await getSaveStore(DECK_STORE);
     const request = store.add(deckToCreate);
 
     return new Promise((resolve, reject) => {
@@ -125,10 +125,14 @@ export const createDeck = async (deckToCreate:DeckDTO): Promise<void> => {
     });
 }
 
-export const createCard = async (cardToCreate: CardDTO): Promise<void> => {
+async function getSaveStore(storeKey: string) {
     const db = await getDatabase();
-    const transaction = db.transaction([CARD_STORE], "readwrite");
-    const store = transaction.objectStore(CARD_STORE);
+    const transaction = db.transaction([storeKey], "readwrite");
+    return transaction.objectStore(storeKey);
+}
+
+export const createCard = async (cardToCreate: CardDTO): Promise<void> => {
+    const store = await getSaveStore(CARD_STORE);
     const request = store.add(cardToCreate);
 
     return new Promise((resolve) => {

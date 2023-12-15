@@ -1,10 +1,10 @@
 <script>
     import "./global.css";
-    import {connectToDirectory} from "../services/directory/directory";
+    import {connectToIDB} from "$lib/services/directory";
     import {onMount} from "svelte";
 
     onMount(() => {
-        connectToDirectory();
+        connectToIDB();
     })
 </script>
 
