@@ -49,9 +49,9 @@
 
 	const onDeckClicked = (deck: Deck) => {
 		navigationStore.add({
-            folderId: deck.id,
-            name: deck.name,
-        });
+			folderId: deck.id,
+			name: deck.name,
+		});
 		goto(`/explorer/${deck.id}`);
 	};
 
@@ -169,15 +169,17 @@
 
 </section>
 
-<AddFolderDialog
-        bind:show={showAddDeckDialog}
-        title="Deck hinzufügen"
-        folderId={deckId}
-/>
+{ #if showAddDeckDialog }
+    <AddFolderDialog
+            bind:show={showAddDeckDialog}
+            title="Deck hinzufügen"
+            folderId={deckId}
+    />
+{/if}
 { #if showAddCardDialog }
     <AddCardDialog
             bind:show={showAddCardDialog}
-            title="Karte hinzufügen"
+            title={selectedCard ? "Karte bearbeiten" : "Karte hinzufügen"}
             folderId={deckId}
             editMode={selectedCard !== null}
             bind:selectedCard={selectedCard}

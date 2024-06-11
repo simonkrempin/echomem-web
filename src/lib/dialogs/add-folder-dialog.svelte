@@ -1,70 +1,96 @@
 <script lang="ts">
-    import WithTitle from "../components/with-title.svelte";
-    import CloseIcon from "$lib/icons/close.svelte";
-    import {generateRandomString} from "../utils/generateRandomString";
-    import {deckStore} from "$lib/stores/deck-store";
+	import { onMount } from "svelte";
+	import WithTitle from "../components/with-title.svelte";
+	import CloseIcon from "$lib/icons/close.svelte";
+	import { generateRandomString } from "../utils/generateRandomString";
+	import { deckStore } from "$lib/stores/deck-store";
 
-    export let show: boolean;
-    export let title: string = "Dialog";
-    export let folderId: string;
+	export let show: boolean;
+	export let title: string = "Dialog";
+	export let folderId: string;
 
-    let folderName: string = "";
+	let folderName: string = "";
 
-    const onCloseClicked = () => {
-        folderName = "";
-        show = false;
-    };
+	let folderInput: HTMLInputElement;
+	let folderInputFocused: boolean = false;
 
-    const onSaveClicked = () => {
-        deckStore.add({
-            name: folderName,
-            parentDeck: folderId,
-            id: generateRandomString(8)
-        })
-        onCloseClicked();
-    }
+	const onCloseClicked = () => {
+		folderName = "";
+		show = false;
+	};
 
-    const onKeyDown = (event: KeyboardEvent) => {
-        if (!show) {
-            return;
-        }
+	const onSaveClicked = () => {
+		deckStore.add({
+			name: folderName,
+			parentDeck: folderId,
+			id: generateRandomString(8),
+		});
+		onCloseClicked();
+	};
 
-        switch (event.key) {
-            case "Escape":
-                event.preventDefault();
-                onCloseClicked();
-                break;
-            case "Enter":
-                event.preventDefault();
-                onSaveClicked();
-                break;
-        }
-    }
+	const onKeyDown = (event: KeyboardEvent) => {
+		if (!show) {
+			return;
+		}
+
+		switch (event.key) {
+			case "Escape":
+				event.preventDefault();
+				onCloseClicked();
+				break;
+			case "Enter":
+				if (!folderInputFocused) {
+					return;
+				}
+
+				event.preventDefault();
+				onSaveClicked();
+				break;
+		}
+	};
+
+	onMount(() => {
+		folderInput.focus();
+	});
 </script>
 
-<svelte:window on:keydown={onKeyDown}/>
+<svelte:window on:keydown={onKeyDown} />
 
-{#if show}
-    <div class="backdrop">
-        <div class="dialog">
-            <header>
-                <h3>{title}</h3>
-                <button class="icon-button" on:click={onCloseClicked}>
-                    <CloseIcon/>
-                </button>
-            </header>
-            <div class="content">
-                <WithTitle title="Ordner Name">
-                    <input bind:value={folderName}/>
-                </WithTitle>
-            </div>
-            <footer>
-                <button class="text-button" on:click={onCloseClicked}>Abbrechen</button>
-                <button class="primary-button" on:click={onSaveClicked}>Speichern</button>
-            </footer>
+<div class="backdrop">
+    <div class="dialog">
+        <header>
+            <h3>{title}</h3>
+            <button
+                class="icon-button"
+                on:click={onCloseClicked}
+            >
+                <CloseIcon />
+            </button>
+        </header>
+        <div class="content">
+            <WithTitle title="Ordner Name">
+                <input
+                        bind:value={folderName}
+                        bind:this={folderInput}
+                        on:focus={() => folderInputFocused = true}
+                        on:blur={() => folderInputFocused = false}
+                />
+            </WithTitle>
         </div>
+        <footer>
+            <button
+                    class="text-button"
+                    on:click={onCloseClicked}
+            >Abbrechen
+            </button>
+            <button
+                    class="primary-button"
+                    on:click={onSaveClicked}
+            >Speichern
+            </button>
+        </footer>
     </div>
-{/if}
+</div>
 
 <style>
     .backdrop {
