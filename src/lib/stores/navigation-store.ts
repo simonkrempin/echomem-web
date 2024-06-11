@@ -17,7 +17,8 @@ function createNavigationStore() {
 		},
 		async pop() {
 			update((value) => {
-				return value.splice(value.length - 1, 1);
+				value.splice(value.length - 1, 1);
+				return value;
 			});
 		},
 		async navigateBackTo(folderId: string) {
@@ -31,7 +32,12 @@ function createNavigationStore() {
 				return value.slice(0, index + 1);
 			});
 		},
-	}
+		async home() {
+			update(() => {
+				return [];
+			});
+		},
+	};
 }
 
 

@@ -1,17 +1,14 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import HomeIcon from "$lib/icons/home.svelte";
+	import ChevronRightIcon from "$lib/icons/chevron-right.svelte";
 	import HomeIconActive from "$lib/icons/home-active.svelte";
-	import {
-		onDestroy,
-		onMount,
-	} from "svelte";
-	import type { Unsubscriber } from "svelte/store";
+	import HomeIcon from "$lib/icons/home.svelte";
 	import {
 		type NavigationItem,
 		navigationStore,
 	} from "$lib/stores/navigation-store";
-	import ChevronRightIcon from "$lib/icons/chevron-right.svelte";
+	import { onMount } from "svelte";
+	import type { Unsubscriber } from "svelte/store";
 
 	let homeHovered: boolean = false;
 
@@ -19,15 +16,20 @@
 	let segments: NavigationItem[] = [];
 
 	onMount(() => {
+		const handlePopState = () => {
+			navigationStore.pop();
+		};
+
 		unsubscribeNavigationStore = navigationStore.subscribe((value) => {
 			segments = value;
 		});
-	});
 
-	onDestroy(() => {
-		if (unsubscribeNavigationStore) {
+		window.addEventListener("popstate", handlePopState);
+
+		return () => {
 			unsubscribeNavigationStore();
-		}
+			window.removeEventListener("popstate", handlePopState);
+        };
 	});
 </script>
 
@@ -36,6 +38,10 @@
             id="home_button"
             on:mouseenter={() => homeHovered = true}
             on:mouseleave={() => homeHovered = false}
+            on:click={() => {
+                navigationStore.home();
+                goto("/explorer");
+            }}
     >
         {#if homeHovered}
             <HomeIconActive />
@@ -73,6 +79,7 @@
         background-color: transparent;
         border: none;
         width: 34px;
+        height: 34px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -90,5 +97,12 @@
     .navigate_button {
         background-color: transparent;
         border: none;
+    }
+
+    .navigate_button:hover {
+        background-color: #e2e2e6;
+        border-radius: 100px;
+        cursor: pointer;
+        transform: scale(1.02);
     }
 </style>
