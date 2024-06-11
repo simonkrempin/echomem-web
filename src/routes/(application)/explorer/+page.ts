@@ -3,6 +3,6 @@ import { redirect } from '@sveltejs/kit';
 
 export async function load() {
     // Perform the database check here
-    const rootDeckId = "qwerqwerqwre";
+    const rootDeckId = "home";
     throw redirect(302, `/explorer/${rootDeckId}`);
 }
