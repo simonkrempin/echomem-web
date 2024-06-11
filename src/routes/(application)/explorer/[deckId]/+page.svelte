@@ -1,78 +1,94 @@
 <script lang="ts">
-    // import type {PageServerData} from './$types';
-    import FolderIcon from '$lib/icons/folder-active.svelte';
-    import DownloadIcon from "$lib/icons/download.svelte";
-    import AddIcon from "$lib/icons/add.svelte";
-    import AddFolderDialog from "$lib/dialogs/add-folder-dialog.svelte";
-    import AddCardDialog from "$lib/dialogs/add-card-dialog.svelte";
-    import Cookies from "js-cookie";
-    import {goto} from "$app/navigation";
-    import {page} from "$app/stores";
-    import {deckStore} from "$lib/stores/deck-store";
-    import {cardStore} from "$lib/stores/card-store";
-    import {onDestroy} from "svelte";
-    import type {Deck} from "$lib/models/deck";
-    import type {Unsubscriber} from "svelte/store";
-    import type {Card} from "$lib/models/card";
+	// import type {PageServerData} from './$types';
+	import FolderIcon from "$lib/icons/folder-active.svelte";
+	import DownloadIcon from "$lib/icons/download.svelte";
+	import AddIcon from "$lib/icons/add.svelte";
+	import AddFolderDialog from "$lib/dialogs/add-folder-dialog.svelte";
+	import AddCardDialog from "$lib/dialogs/add-card-dialog.svelte";
+	import Cookies from "js-cookie";
+	import { goto } from "$app/navigation";
+	import { page } from "$app/stores";
+	import { deckStore } from "$lib/stores/deck-store";
+	import { cardStore } from "$lib/stores/card-store";
+	import { onDestroy } from "svelte";
+	import type { Deck } from "$lib/models/deck";
+	import type { Unsubscriber } from "svelte/store";
+	import type {
+		Card,
+		CardDTO,
+	} from "$lib/models/card";
 
-    // export let data: PageServerData;
+	// export let data: PageServerData;
 
-    $: deckId = $page.params.deckId;
+	$: deckId = $page.params.deckId;
 
-    let deckQuery: Promise<Deck[]>;
-    let cardQuery: Promise<Card[]>;
-    let unsubscribeDeckStore: Unsubscriber;
-    let unsubscribeCardStore: Unsubscriber;
+	let deckQuery: Promise<Deck[]>;
+	let cardQuery: Promise<Card[]>;
+	let unsubscribeDeckStore: Unsubscriber;
+	let unsubscribeCardStore: Unsubscriber;
 
-    $: {
-        unsubscribeDeckStore = deckStore.subscribe(value => {
-            deckQuery = deckStore.get(deckId);
-        });
-        unsubscribeCardStore = cardStore.subscribe(() => {
-            cardQuery = cardStore.get(deckId)
-        })
-    }
+	let selectedCard: CardDTO | null = null;
 
-    onDestroy(() => {
-        if (unsubscribeDeckStore) {
-            unsubscribeDeckStore();
-        }
-        if (unsubscribeCardStore) {
-            unsubscribeCardStore();
-        }
-    });
+	$: {
+		unsubscribeDeckStore = deckStore.subscribe(() => {
+			deckQuery = deckStore.get(deckId);
+		});
+		unsubscribeCardStore = cardStore.subscribe(() => {
+			cardQuery = cardStore.get(deckId);
+		});
+	}
 
-    const onDeckClicked = (deckId: string) => {
-        goto(`/explorer/${ deckId }`)
-    }
+	onDestroy(() => {
+		if (unsubscribeDeckStore) {
+			unsubscribeDeckStore();
+		}
+		if (unsubscribeCardStore) {
+			unsubscribeCardStore();
+		}
+	});
 
-    const onAccountClicked = () => {
-        Cookies.remove("store-type");
-        Cookies.remove("session");
-        goto("/");
-    }
+	const onDeckClicked = (deckId: string) => {
+		goto(`/explorer/${deckId}`);
+	};
 
-    let showAddDeckDialog = false;
-    const onAddDeckClicked = () => {
-        showAddDeckDialog = true;
-    }
+	const onAccountClicked = () => {
+		Cookies.remove("store-type");
+		Cookies.remove("session");
+		goto("/");
+	};
 
-    let showAddCardDialog = false;
-    const onAddCardClicked = () => {
-        showAddCardDialog = true;
-    }
+	let showAddDeckDialog = false;
+	const onAddDeckClicked = () => {
+		showAddDeckDialog = true;
+	};
 
-    const onDownloadDeckClicked = () => {
+	let showAddCardDialog = false;
+	const onAddCardClicked = () => {
+		showAddCardDialog = true;
+	};
 
-    }
+	const onDownloadDeckClicked = () => {
+
+	};
+
+	const onRowItemClicked = (clickedRowItem: CardDTO) => {
+		selectedCard = clickedRowItem;
+		showAddCardDialog = true;
+	};
 </script>
 
 <section>
     <div class="account-bar">
-        <button class="icon-button" on:click={onDownloadDeckClicked}>
-            <DownloadIcon/>
+        <button
+                class="icon-button"
+                on:click={onDownloadDeckClicked}
+        >
+            <DownloadIcon />
         </button>
-        <button class="account-button" on:click={onAccountClicked}></button>
+        <button
+                class="account-button"
+                on:click={onAccountClicked}
+        ></button>
     </div>
 
     <div id="decks">
@@ -80,50 +96,88 @@
             Loading...
         {:then decks}
             {#each decks as deck (deck.id)}
-                <button class="deck" on:click={() => onDeckClicked(deck.id)}>
-                    <FolderIcon height={60} width={60}/>
+                <button
+                        class="deck"
+                        on:click={() => onDeckClicked(deck.id)}
+                >
+                    <FolderIcon
+                            height={60}
+                            width={60}
+                    />
                     {deck.name}
                 </button>
             {/each}
-            <button class="deck" on:click={onAddDeckClicked}>
-                <AddIcon height={60} width={60}/>
+            <button
+                    class="deck"
+                    on:click={onAddDeckClicked}
+            >
+                <AddIcon
+                        height={60}
+                        width={60}
+                />
                 Deck hinzufügen
             </button>
         {:catch error}
-            Error on fetching data
+            Error on fetching data {error}
         {/await}
 
     </div>
 
-    <div id="cards">
-        <div class="list-header">
-            <button class="list-header-item">Front</button>
-            <button class="list-header-item">Back</button>
-            <button class="list-header-item">Next Repetition</button>
-        </div>
-        <hr/>
+    <table>
+        <thead>
+        <tr>
+            <th scope="col">Front</th>
+            <th scope="col">Back</th>
+            <th
+                    scope="col"
+                    id="next-repetition"
+            >Next Repetition
+            </th>
+        </tr>
+        </thead>
         {#await cardQuery}
             Loading...
         {:then cards}
             {#each cards as card (card.id)}
-                <div class="list-item">
-                    <p>{card.front}</p>
-                    <p>{card.back}</p>
-                    <p>Datum</p>
-                </div>
+                <tr
+                        on:click={() => onRowItemClicked({
+                    front: card.front,
+                    back: card.back,
+                    id: card.id,
+                })}
+                >
+                    <td>{card.front}</td>
+                    <td>{card.back}</td>
+                    <td>Datum</td>
+                </tr>
             {/each}
         {:catch error}
-            Error on fetching data
+            Error on fetching data {error}
         {/await}
-
-        <button class="add-card-fab" on:click={onAddCardClicked}>
+        <button
+                class="add-card-fab"
+                on:click={onAddCardClicked}
+        >
             <AddIcon />
         </button>
-    </div>
+    </table>
+
 </section>
 
-<AddFolderDialog bind:show={showAddDeckDialog} title="Deck hinzufügen" folderId={deckId}/>
-<AddCardDialog bind:show={showAddCardDialog} title="Karte hinzufügen" folderId={deckId} />
+<AddFolderDialog
+        bind:show={showAddDeckDialog}
+        title="Deck hinzufügen"
+        folderId={deckId}
+/>
+{ #if showAddCardDialog }
+    <AddCardDialog
+            bind:show={showAddCardDialog}
+            title="Karte hinzufügen"
+            folderId={deckId}
+            editMode={selectedCard !== null}
+            bind:selectedCard={selectedCard}
+    />
+{/if}
 
 <style>
     section {
@@ -154,7 +208,7 @@
         align-items: center;
     }
 
-    #cards {
+    table {
         background: #f5f5f5;
         border-radius: 16px;
         width: 100%;
@@ -162,38 +216,23 @@
         position: relative;
     }
 
-    .list-item {
-        display: flex;
-        padding: 0 8px;
+    table > tr {
+        height: 50px;
     }
 
-    .list-item > p {
-        flex: 1;
+    table > tr:hover {
+        background-color: #f0f0f5;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+        transform: translateY(-2px);
+        cursor: pointer;
     }
 
-    hr {
-        margin: 0;
+    td {
+        padding-left: 10px;
     }
 
-    .list-header {
-        display: flex;
-        width: calc(100% - 16px);
-        gap: 20px;
-        padding: 8px;
-    }
-
-    .list-header-item {
-        border: none;
-        background-color: transparent;
-        padding: 8px 32px;
-        flex: 1;
-        text-align: left;
-        transition: all 0.2s ease-in-out;
-        border-radius: 100px;
-    }
-
-    .list-header-item:hover {
-        background-color: #c4c4c4;
+    #next-repetition {
+        width: 150px
     }
 
     .account-bar {

@@ -147,3 +147,20 @@ export const createCard = async (cardToCreate: CardDTO): Promise<void> => {
         }
     });
 }
+
+export const updateCard = async (cardToUpdate: CardDTO): Promise<void> => {
+    const store = await getSaveStore(CARD_STORE);
+    const request = store.put(cardToUpdate);
+
+    return new Promise((resolve) => {
+        request.onsuccess = () => {
+            delete cardCache[cardToUpdate.deckId!];
+            resolve();
+        }
+
+        request.onerror = () => {
+            console.error("Error in creating deck", request.error);
+            throw new Error("weren't able to update card");
+        }
+    });
+}

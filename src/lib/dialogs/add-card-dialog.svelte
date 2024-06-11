@@ -1,76 +1,121 @@
 <script lang="ts">
-    import WithTitle from "../components/with-title.svelte";
-    import CloseIcon from "$lib/icons/close.svelte";
-    import {cardStore} from "$lib/stores/card-store";
-    import {generateRandomString} from "$lib/utils/generateRandomString";
+	import type { CardDTO } from "$lib/models/card";
+	import WithTitle from "../components/with-title.svelte";
+	import CloseIcon from "$lib/icons/close.svelte";
+	import { cardStore } from "$lib/stores/card-store";
+	import { generateRandomString } from "$lib/utils/generateRandomString";
+	import { onMount } from "svelte";
 
-    export let show: boolean;
-    export let title: string = "Dialog";
-    export let folderId: string;
+	export let show: boolean;
+	export let title: string = "Dialog";
+	export let folderId: string;
+	export let editMode: boolean = false;
 
-    let cardFront: string = "";
-    let cardBack: string = "";
+	export let selectedCard: CardDTO | null = null;
+	let cardFront: string = selectedCard?.front ?? "";
+	let cardBack: string = selectedCard?.back ?? "";
+	let cardId: string = selectedCard?.id ?? generateRandomString(8);
 
-    const onCloseClicked = () => {
-        cardFront = "";
-        cardBack = "";
-        show = false;
-    };
+	let frontInputElement: HTMLInputElement;
+	let frontInputElementFocused: boolean = false;
+	let backInputElement: HTMLInputElement;
+	let backInputElementFocused: boolean = false;
 
-    const onSaveClicked = () => {
-        cardStore.add({
-            front: cardFront,
-            back: cardBack,
-            deckId: folderId,
-            id: generateRandomString(8),
-        })
-        onCloseClicked();
-    }
+	onMount(() => {
+		frontInputElement.focus();
+	});
 
-    const onKeyDown = (event: KeyboardEvent) => {
-        if (!show) {
-            return;
-        }
+	const onCloseClicked = () => {
+		cardFront = "";
+		cardBack = "";
+		editMode = false;
+		selectedCard = null;
+		show = false;
+	};
 
-        switch (event.key) {
-            case "Escape":
-                event.preventDefault();
-                onCloseClicked();
-                break;
-            case "Enter":
-                event.preventDefault();
-                onSaveClicked();
-                break;
-        }
-    }
+	const onSaveClicked = () => {
+		if (editMode) {
+			cardStore.update({
+				front: cardFront,
+				back: cardBack,
+				deckId: folderId,
+				id: cardId,
+			});
+		}
+
+		cardStore.add({
+			front: cardFront,
+			back: cardBack,
+			deckId: folderId,
+			id: cardId,
+		});
+
+		onCloseClicked();
+	};
+
+	const onKeyDown = (event: KeyboardEvent) => {
+		switch (event.key) {
+			case "Escape":
+				event.preventDefault();
+				onCloseClicked();
+				break;
+			case "Enter":
+				if (!(frontInputElementFocused || backInputElementFocused)) {
+					return;
+				}
+
+				event.preventDefault();
+				onSaveClicked();
+				break;
+		}
+	};
 </script>
 
-<svelte:window on:keydown={onKeyDown}/>
+<svelte:window on:keydown={onKeyDown} />
 
-{#if show}
-    <div class="backdrop">
-        <div class="dialog">
-            <header>
-                <h3>{title}</h3>
-                <button class="icon-button" on:click={onCloseClicked}>
-                    <CloseIcon/>
-                </button>
-            </header>
-            <div class="content">
-                <WithTitle title="Vorderseite">
-                    <input bind:value={cardFront}/>
-                </WithTitle>
-                <WithTitle title="Rückseite">
-                    <input bind:value={cardBack}/>
-                </WithTitle>
-            </div>
-            <footer>
-                <button class="text-button" on:click={onCloseClicked}>Abbrechen</button>
-                <button class="primary-button" on:click={onSaveClicked}>Speichern</button>
-            </footer>
+<div class="backdrop">
+    <div class="dialog">
+        <header>
+            <h3>{title}</h3>
+            <button
+                    class="icon-button"
+                    on:click={onCloseClicked}
+            >
+                <CloseIcon />
+            </button>
+        </header>
+        <div class="content">
+            <WithTitle title="Vorderseite">
+                <input
+                        bind:value={cardFront}
+                        bind:this={frontInputElement}
+                        on:focus={() => frontInputElementFocused = true}
+                        on:blur={() => frontInputElementFocused = false}
+                />
+            </WithTitle>
+            <WithTitle title="Rückseite">
+                <input
+                        bind:value={cardBack}
+                        bind:this={backInputElement}
+                        on:focus={() => backInputElementFocused = true}
+                        on:blur={() => backInputElementFocused = false}
+                />
+            </WithTitle>
         </div>
+        <footer>
+            <button
+                    class="text-button"
+                    on:click={onCloseClicked}
+            >Abbrechen
+            </button>
+            <button
+                    class="primary-button"
+                    on:click={onSaveClicked}
+            >Speichern
+            </button>
+        </footer>
     </div>
-{/if}
+</div>
 
 <style>
     .backdrop {
