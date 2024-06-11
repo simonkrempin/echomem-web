@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 
-interface NavigationItem {
+export interface NavigationItem {
 	name: string;
 	folderId: string;
 }
@@ -28,7 +28,7 @@ function createNavigationStore() {
 					return value;
 				}
 
-				return value.slice(0, index);
+				return value.slice(0, index + 1);
 			});
 		},
 	}

@@ -10,6 +10,7 @@
 	import { page } from "$app/stores";
 	import { deckStore } from "$lib/stores/deck-store";
 	import { cardStore } from "$lib/stores/card-store";
+	import { navigationStore } from "$lib/stores/navigation-store";
 	import { onDestroy } from "svelte";
 	import type { Deck } from "$lib/models/deck";
 	import type { Unsubscriber } from "svelte/store";
@@ -46,8 +47,12 @@
 		}
 	});
 
-	const onDeckClicked = (deckId: string) => {
-		goto(`/explorer/${deckId}`);
+	const onDeckClicked = (deck: Deck) => {
+		navigationStore.add({
+            folderId: deck.id,
+            name: deck.name,
+        });
+		goto(`/explorer/${deck.id}`);
 	};
 
 	const onAccountClicked = () => {
@@ -98,7 +103,7 @@
             {#each decks as deck (deck.id)}
                 <button
                         class="deck"
-                        on:click={() => onDeckClicked(deck.id)}
+                        on:click={() => onDeckClicked(deck)}
                 >
                     <FolderIcon
                             height={60}
