@@ -18,7 +18,6 @@
 
 	let frontInputElement: HTMLInputElement;
 	let frontInputElementFocused: boolean = false;
-	let backInputElement: HTMLInputElement;
 	let backInputElementFocused: boolean = false;
 
 	onMount(() => {
@@ -96,7 +95,6 @@
             <WithTitle title="Rückseite">
                 <input
                         bind:value={cardBack}
-                        bind:this={backInputElement}
                         on:focus={() => backInputElementFocused = true}
                         on:blur={() => backInputElementFocused = false}
                 />

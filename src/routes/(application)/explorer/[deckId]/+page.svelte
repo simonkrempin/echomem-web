@@ -17,8 +17,7 @@
 		Card,
 		CardDTO,
 	} from "$lib/models/card";
-
-	// export let data: PageServerData;
+	import Breadcrumb from "$lib/components/breadcrumb.svelte";
 
 	$: deckId = $page.params.deckId;
 
@@ -79,6 +78,7 @@
 
 <section>
     <div class="account-bar">
+        <Breadcrumb />
         <button
                 class="icon-button"
                 on:click={onDownloadDeckClicked}
