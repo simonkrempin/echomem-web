@@ -1,8 +1,8 @@
 // src/routes/explorer/+page.server.ts
+import { ROOT_FOLDER_ID } from "$lib";
 import { redirect } from '@sveltejs/kit';
 
 export async function load() {
     // Perform the database check here
-    const rootDeckId = "home";
-    throw redirect(302, `/explorer/${rootDeckId}`);
+    throw redirect(302, `/explorer/${ROOT_FOLDER_ID}`);
 }

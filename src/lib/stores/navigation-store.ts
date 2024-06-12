@@ -1,9 +1,6 @@
+import { getFolderPath } from "$lib/services/directory";
+import type { NavigationItem } from "$lib/types/navigation-types";
 import { writable } from "svelte/store";
-
-export interface NavigationItem {
-	name: string;
-	folderId: string;
-}
 
 function createNavigationStore() {
 	const { subscribe, update } = writable<NavigationItem[]>([]);
@@ -37,6 +34,18 @@ function createNavigationStore() {
 				return [];
 			});
 		},
+		async loadPathFromUrl(url: string) {
+			const folderId = /\/explorer\/([a-zA-Z0-9]+)/.exec(url)?.[1];
+
+			if (folderId === undefined) {
+				return;
+			}
+
+			const navigation = await getFolderPath(folderId);
+			update(() => {
+				return navigation;
+			});
+		}
 	};
 }
 

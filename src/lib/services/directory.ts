@@ -1,3 +1,5 @@
+import { ROOT_FOLDER_ID } from "$lib";
+import type { NavigationItem } from "$lib/types/navigation-types";
 import console from "console";
 import Cookies from "js-cookie";
 import type {Card, CardDTO} from "../models/card";
@@ -64,8 +66,10 @@ const queryDB = async (storeKey: string, storeIndex: string, queryValue: string)
     const db = await getDatabase();
     const transaction = db.transaction([storeKey], "readonly");
     const store = transaction.objectStore(storeKey);
+    if (store.keyPath === storeIndex) {
+        return store.getAll(queryValue);
+    }
     const index = store.index(storeIndex);
-    window.console.log(index);
     return index.getAll(queryValue);
 }
 
@@ -88,6 +92,21 @@ export const getDecks = async (deckId: string): Promise<Deck[]> => {
     });
 }
 
+export const getDeck = async (deckId: string): Promise<Deck> => {
+    const request = await queryDB(DECK_STORE, Indexes.id, deckId);
+
+    return new Promise((resolve, reject) => {
+        request.onsuccess = (event) => {
+            resolve((event.target! as IDBRequest).result[0]);
+        }
+
+        request.onerror = () => {
+            console.error("Error in retrieving data", request.error);
+            reject();
+        }
+    })
+}
+
 export const getCards = async (deckId: string): Promise<Card[]> => {
     const cachedData = cardCache[deckId];
     if (cachedData) {
@@ -95,7 +114,6 @@ export const getCards = async (deckId: string): Promise<Card[]> => {
     }
 
     const request = await queryDB(CARD_STORE, Indexes.deckId, deckId);
-    window.console.log(request);
 
     return await new Promise((resolve, reject) => {
         request.onsuccess = () => {
@@ -119,7 +137,7 @@ export const createDeck = async (deckToCreate: DeckDTO): Promise<void> => {
             resolve();
         }
         request.onerror = () => {
-            console.log("Error in creating deck", request.error);
+            window.console.log("Error in creating deck", request.error);
             reject();
         }
     });
@@ -163,4 +181,25 @@ export const updateCard = async (cardToUpdate: CardDTO): Promise<void> => {
             throw new Error("weren't able to update card");
         }
     });
+}
+
+export const getFolderPath = async (folderId: string): Promise<NavigationItem[]> => {
+    const result: NavigationItem[] = [];
+
+    if (folderId === ROOT_FOLDER_ID) {
+        return result;
+    }
+
+    let folder: Deck | undefined;
+
+    do {
+        folder = await getDeck(folderId);
+        result.push({
+            folderId: folder.id,
+            name: folder.name,
+        });
+        folderId = folder.parentDeck;
+    } while (folderId !== ROOT_FOLDER_ID);
+
+    return result.reverse();
 }

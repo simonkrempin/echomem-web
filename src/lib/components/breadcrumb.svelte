@@ -3,10 +3,8 @@
 	import ChevronRightIcon from "$lib/icons/chevron-right.svelte";
 	import HomeIconActive from "$lib/icons/home-active.svelte";
 	import HomeIcon from "$lib/icons/home.svelte";
-	import {
-		type NavigationItem,
-		navigationStore,
-	} from "$lib/stores/navigation-store";
+	import { navigationStore } from "$lib/stores/navigation-store";
+	import type { NavigationItem } from "$lib/types/navigation-types";
 	import { onMount } from "svelte";
 	import type { Unsubscriber } from "svelte/store";
 
@@ -23,6 +21,10 @@
 		unsubscribeNavigationStore = navigationStore.subscribe((value) => {
 			segments = value;
 		});
+
+		if (/\/explorer\/([a-zA-Z0-9]+)/.exec(window.location.pathname)?.[1] !== segments.at(-1)?.folderId) {
+		    navigationStore.loadPathFromUrl(window.location.pathname);
+        }
 
 		window.addEventListener("popstate", handlePopState);
 
