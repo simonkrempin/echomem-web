@@ -3,6 +3,7 @@ export interface Card {
     back: string;
     id: string;
     deckId: string;
+    repetitionDate: string;
 }
 
 export interface CardDTO {
@@ -10,4 +11,5 @@ export interface CardDTO {
     back?: string;
     deckId?: string;
     id?: string;
+    repetitionDate?: string;
 }

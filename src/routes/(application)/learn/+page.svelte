@@ -1,41 +1,80 @@
 <script lang="ts">
+	import type { Card } from "$lib/models/card";
+	import { getQuestionsToLearn } from "$lib/services/directory";
+	import { onMount } from "svelte";
+
 	let showSolution = false;
+	let currentQuestion: Card | undefined;
+	let questionBacklog: Card[] = [];
+
+	onMount(() => {
+		getQuestionsToLearn()
+			.then(questions => {
+				questionBacklog = questions;
+				if (questionBacklog.length > 0) {
+					currentQuestion = questionBacklog.shift();
+				}
+			})
+			.catch(error => console.error(error));
+	});
+
+	function getNextQuestion() {
+		// shift is a slow operation, maybe needs improvement in the future by reversing the array.
+		const questionItem = questionBacklog.shift();
+
+		// I wonder what will happen if the shift happens after this.
+		if (questionBacklog.length === 3) {
+			getQuestionsToLearn()
+				.then(questions => questionBacklog.push(...questions))
+				.catch(error => console.error("uncaught error, please fix", error));
+		}
+
+		return questionItem;
+	}
 
 	function onSolutionWrong() {
 		showSolution = false;
+		currentQuestion = getNextQuestion();
 	}
 
 	function onSolutionCorrect() {
 		showSolution = false;
+		currentQuestion = getNextQuestion();
 	}
 </script>
 
 <section>
-    <button
-            class="unknown_button"
-            on:click={onSolutionWrong}
-    >
-        X
-    </button>
-    <div class="main_content">
-        <div>
-            <h3>Das hier ist die Frage</h3>
-        </div>
-        {#if showSolution}
-            <div>
-                <p>X</p>
-            </div>
-        {/if}
-        <button on:click={() => showSolution = !showSolution}>
-            {showSolution ? "Verstecke die Lösung" : "Zeige die Lösung an"}
+    {#if currentQuestion !== undefined}
+        <button
+                class="unknown_button"
+                on:click={onSolutionWrong}
+        >
+            X
         </button>
-    </div>
-    <button
-            class="unknown_button"
-            on:click={onSolutionCorrect}
-    >
-        C
-    </button>
+        <div class="main_content">
+            <div>
+                <h3>{currentQuestion.front}</h3>
+            </div>
+            {#if showSolution}
+                <div>
+                    <p>{currentQuestion.back}</p>
+                </div>
+            {/if}
+            <button on:click={() => showSolution = !showSolution}>
+                {showSolution ? "Verstecke die Lösung" : "Zeige die Lösung an"}
+            </button>
+        </div>
+        <button
+                class="unknown_button"
+                on:click={onSolutionCorrect}
+        >
+            C
+        </button>
+    {:else}
+        <div>
+            Heute sind alle Fragen gelöst!
+        </div>
+    {/if}
 </section>
 
 <style>
