@@ -126,45 +126,47 @@
             Error on fetching data {error}
         {/await}
     </div>
-    <div class="cards">
-        <table>
-            <thead>
-            <tr>
-                <th scope="col">Front</th>
-                <th scope="col">Back</th>
-                <th
-                        scope="col"
-                        id="next-repetition"
-                >Next Repetition
-                </th>
-            </tr>
-            </thead>
-            {#await cardQuery}
-                Loading...
-            {:then cards}
-                {#each cards as card (card.id)}
-                    <tr
-                        on:click={() => onRowItemClicked({
+    <div class="cut_scrollbar">
+        <div class="cards">
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">Front</th>
+                    <th scope="col">Back</th>
+                    <th
+                            scope="col"
+                            id="next-repetition"
+                    >Next Repetition
+                    </th>
+                </tr>
+                </thead>
+                {#await cardQuery}
+                    Loading...
+                {:then cards}
+                    {#each cards as card (card.id)}
+                        <tr
+                                on:click={() => onRowItemClicked({
                             front: card.front,
                             back: card.back,
                             id: card.id,
                         })}
-                    >
-                        <td>{card.front}</td>
-                        <td>{card.back}</td>
-                        <td>{getReadableDate(card.repetitionDate)}</td>
-                    </tr>
-                {/each}
-            {:catch error}
-                Error on fetching data {error}
-            {/await}
-            <button
-                    class="add-card-fab"
-                    on:click={onAddCardClicked}
-            >
-                <AddIcon />
-            </button>
-        </table>
+                        >
+                            <td>{card.front}</td>
+                            <td>{card.back}</td>
+                            <td>{getReadableDate(card.repetitionDate)}</td>
+                        </tr>
+                    {/each}
+                {:catch error}
+                    Error on fetching data {error}
+                {/await}
+                <button
+                        class="add-card-fab"
+                        on:click={onAddCardClicked}
+                >
+                    <AddIcon />
+                </button>
+            </table>
+        </div>
     </div>
 </section>
 
@@ -218,6 +220,13 @@
         flex: 1;
         overflow-y: auto;
         background: #f5f5f5;
+        border-radius: 16px;
+    }
+
+    .cut_scrollbar {
+        overflow: hidden;
+        display: flex;
+        flex: 1;
         border-radius: 16px;
     }
 
