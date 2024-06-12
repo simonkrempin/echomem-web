@@ -5,6 +5,7 @@
 	import AddIcon from "$lib/icons/add.svelte";
 	import AddFolderDialog from "$lib/dialogs/add-folder-dialog.svelte";
 	import AddCardDialog from "$lib/dialogs/add-card-dialog.svelte";
+	import { getReadableDate } from "$lib/utils/valueFormatters";
 	import Cookies from "js-cookie";
 	import { goto } from "$app/navigation";
 	import { page } from "$app/stores";
@@ -95,7 +96,6 @@
                 on:click={onAccountClicked}
         ></button>
     </div>
-
     <div id="decks">
         {#await deckQuery}
             Loading...
@@ -125,48 +125,47 @@
         {:catch error}
             Error on fetching data {error}
         {/await}
-
     </div>
-
-    <table>
-        <thead>
-        <tr>
-            <th scope="col">Front</th>
-            <th scope="col">Back</th>
-            <th
-                    scope="col"
-                    id="next-repetition"
-            >Next Repetition
-            </th>
-        </tr>
-        </thead>
-        {#await cardQuery}
-            Loading...
-        {:then cards}
-            {#each cards as card (card.id)}
-                <tr
+    <div class="cards">
+        <table>
+            <thead>
+            <tr>
+                <th scope="col">Front</th>
+                <th scope="col">Back</th>
+                <th
+                        scope="col"
+                        id="next-repetition"
+                >Next Repetition
+                </th>
+            </tr>
+            </thead>
+            {#await cardQuery}
+                Loading...
+            {:then cards}
+                {#each cards as card (card.id)}
+                    <tr
                         on:click={() => onRowItemClicked({
-                    front: card.front,
-                    back: card.back,
-                    id: card.id,
-                })}
-                >
-                    <td>{card.front}</td>
-                    <td>{card.back}</td>
-                    <td>Datum</td>
-                </tr>
-            {/each}
-        {:catch error}
-            Error on fetching data {error}
-        {/await}
-        <button
-                class="add-card-fab"
-                on:click={onAddCardClicked}
-        >
-            <AddIcon />
-        </button>
-    </table>
-
+                            front: card.front,
+                            back: card.back,
+                            id: card.id,
+                        })}
+                    >
+                        <td>{card.front}</td>
+                        <td>{card.back}</td>
+                        <td>{getReadableDate(card.repetitionDate)}</td>
+                    </tr>
+                {/each}
+            {:catch error}
+                Error on fetching data {error}
+            {/await}
+            <button
+                    class="add-card-fab"
+                    on:click={onAddCardClicked}
+            >
+                <AddIcon />
+            </button>
+        </table>
+    </div>
 </section>
 
 { #if showAddDeckDialog }
@@ -215,12 +214,18 @@
         align-items: center;
     }
 
-    table {
+    .cards {
+        flex: 1;
+        overflow-y: auto;
         background: #f5f5f5;
         border-radius: 16px;
+    }
+
+    table {
         width: 100%;
         flex: 1;
         position: relative;
+        table-layout: fixed;
     }
 
     table > tr {
@@ -261,9 +266,9 @@
         background-color: aquamarine;
         height: 52px;
         width: 52px;
-        position: absolute;
-        right: 16px;
-        bottom: 16px;
+        position: fixed;
+        right: 48px;
+        bottom: 32px;
         display: flex;
         justify-content: center;
         align-items: center;
