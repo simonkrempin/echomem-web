@@ -4,6 +4,7 @@ export interface Card {
     id: string;
     deckId: string;
     repetitionDate: string;
+    lastRepetition: number;
 }
 
 export interface CardDTO {
@@ -12,4 +13,5 @@ export interface CardDTO {
     deckId?: string;
     id?: string;
     repetitionDate?: string;
+    lastRepetition?: number;
 }

@@ -1,6 +1,10 @@
 <script lang="ts">
 	import type { Card } from "$lib/models/card";
-	import { getQuestionsToLearn } from "$lib/services/directory";
+	import {
+		cardCorrect,
+		cardIncorrect,
+		getQuestionsToLearn,
+	} from "$lib/services/directory";
 	import { onMount } from "svelte";
 
 	let showSolution = false;
@@ -34,11 +38,23 @@
 
 	function onSolutionWrong() {
 		showSolution = false;
+
+		if (currentQuestion === undefined) {
+			return;
+        }
+
+		void cardIncorrect(currentQuestion);
 		currentQuestion = getNextQuestion();
 	}
 
 	function onSolutionCorrect() {
 		showSolution = false;
+
+		if (currentQuestion === undefined) {
+		    return;
+        }
+
+		void cardCorrect(currentQuestion);
 		currentQuestion = getNextQuestion();
 	}
 </script>

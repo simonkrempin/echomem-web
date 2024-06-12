@@ -158,8 +158,10 @@ async function getSaveStore(storeKey: string) {
 }
 
 export const createCard = async (cardToCreate: CardDTO): Promise<void> => {
-	const store = await getSaveStore(CARD_STORE);
 	cardToCreate.repetitionDate = new Date().toISOString().split("T")[0];
+	cardToCreate.lastRepetition = 0;
+
+	const store = await getSaveStore(CARD_STORE);
 	const request = store.add(cardToCreate);
 
 	return new Promise((resolve) => {
@@ -233,10 +235,38 @@ export const getQuestionsToLearn = async (): Promise<Card[]> => {
 	});
 };
 
-export const cardCorrect = async (cardId: string): Promise<void> => {
-	
+async function updateEntry(storeKey: string, storeIndex: string, newValue: unknown): Promise<void> {
+	const db = await getDatabase();
+	const transaction = db.transaction([storeKey], "readwrite");
+	const store = transaction.objectStore(storeKey);
+	const request = store.put(newValue);
+
+	return new Promise((resolve, reject) => {
+		request.onsuccess = () => {
+			resolve();
+		}
+
+		request.onerror = () => {
+			console.error("Error in updating data", request.error);
+			reject();
+		}
+	})
 }
 
-export const cardIncorrect = async (cardId: string): Promise<void> => {
+export const cardCorrect = async (card: Card): Promise<void> => {
+	card.lastRepetition += 1;
 
+	window.console.log(card.lastRepetition);
+
+	const newDate = new Date();
+	newDate.setDate(newDate.getDate() + card.lastRepetition);
+	card.repetitionDate = newDate.toISOString().split("T")[0];
+
+	return updateEntry(CARD_STORE, Indexes.id, card);
+}
+
+export const cardIncorrect = async (card: Card): Promise<void> => {
+	card.repetitionDate = new Date().toISOString().split("T")[0];
+	card.lastRepetition = 0;
+	return updateEntry(CARD_STORE, Indexes.id, card);
 }
