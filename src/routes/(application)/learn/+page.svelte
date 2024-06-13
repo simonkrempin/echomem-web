@@ -27,7 +27,7 @@
 		const questionItem = questionBacklog.shift();
 
 		// I wonder what will happen if the shift happens after this.
-		if (questionBacklog.length === 3) {
+		if (questionBacklog.length <= 3) {
 			getQuestionsToLearn()
 				.then(questions => questionBacklog.push(...questions))
 				.catch(error => console.error("uncaught error, please fix", error));
