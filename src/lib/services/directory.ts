@@ -70,7 +70,7 @@ export const getDatabase = async (): Promise<IDBDatabase> => {
 	return _database!; // if this would be null, then an error would be thrown before
 };
 
-const queryDB = async (storeKey: string, storeIndex: string, queryValue: string, resultCount?: number): Promise<IDBRequest> => {
+const queryDB = async (storeKey: string, storeIndex: string, queryValue?: string, resultCount?: number): Promise<IDBRequest> => {
 	const db = await getDatabase();
 	const transaction = db.transaction([storeKey], "readonly");
 	const store = transaction.objectStore(storeKey);
@@ -216,20 +216,31 @@ export const getFolderPath = async (folderId: string): Promise<NavigationItem[]>
 };
 
 export const getQuestionsToLearn = async (): Promise<Card[]> => {
-	const result = await queryDB(
-		CARD_STORE,
-		Indexes.repetitionDate,
-		new Date().toISOString().split("T")[0],
-		10,
-	);
+	const store = await getSaveStore(CARD_STORE);
+	const index = store.index(Indexes.repetitionDate);
+
+	const result: Card[] = [];
+	let count = 0;
+
+	const keyRange = IDBKeyRange.upperBound(new Date().toISOString().split("T")[0]);
 
 	return new Promise((resolve, reject) => {
-		result.onsuccess = () => {
-			resolve(result.result);
+		const request = index.openCursor(keyRange);
+
+		request.onsuccess = (event: any) => {
+			const cursor = event.target!.result;
+
+			if (cursor && count < 10) {
+				result.push(cursor.value);
+				count += 1;
+				cursor.continue();
+			} else {
+				resolve(result);
+			}
 		};
 
-		result.onerror = () => {
-			console.error("Error in retrieving data", result.error);
+		request.onerror = () => {
+			console.error("Error in retrieving data", request.error);
 			reject();
 		};
 	});

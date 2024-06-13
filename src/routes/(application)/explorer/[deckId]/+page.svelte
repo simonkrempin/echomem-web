@@ -145,11 +145,11 @@
                 {:then cards}
                     {#each cards as card (card.id)}
                         <tr
-                                on:click={() => onRowItemClicked({
-                            front: card.front,
-                            back: card.back,
-                            id: card.id,
-                        })}
+                            on:click={() => onRowItemClicked({
+                                front: card.front,
+                                back: card.back,
+                                id: card.id,
+                            })}
                         >
                             <td>{card.front}</td>
                             <td>{card.back}</td>
