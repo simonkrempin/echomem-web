@@ -1,5 +1,6 @@
 <script lang="ts">
-    import Folder from "$lib/icons/folder.svelte";
+    import { page } from "$app/stores";
+	import Folder from "$lib/icons/folder.svelte";
     import FolderActive from "$lib/icons/folder-active.svelte";
     import Learn from "$lib/icons/learn.svelte";
     import LearnActive from "$lib/icons/learn-active.svelte";
@@ -7,7 +8,9 @@
     import ExploreActive from "$lib/icons/explore-active.svelte";
     import {goto} from "$app/navigation";
 
-    let selectedTab: number = 0;
+	const tabs = ["explorer", "learn", "school"];
+
+    let selectedTab: number = tabs.indexOf($page.url.pathname.split("/")[1]);
     const onTabSelected = (tab: number) => {
         selectedTab = tab;
     }
