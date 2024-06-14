@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { CardDTO } from "$lib/models/card";
-	import WithTitle from "../components/with-title.svelte";
 	import CloseIcon from "$lib/icons/close.svelte";
+	import type { Card } from "$lib/models/card";
 	import { cardStore } from "$lib/stores/card-store";
 	import { generateRandomString } from "$lib/utils/generateRandomString";
 	import { onMount } from "svelte";
+	import WithTitle from "../components/with-title.svelte";
 
 	export let show: boolean;
 	export let title: string = "Dialog";
 	export let folderId: string;
 	export let editMode: boolean = false;
 
-	export let selectedCard: CardDTO | null = null;
+	export let selectedCard: Card | null = null;
 	let cardFront: string = selectedCard?.front ?? "";
 	let cardBack: string = selectedCard?.back ?? "";
 	let cardId: string = selectedCard?.id ?? generateRandomString(8);
@@ -33,21 +33,23 @@
 	};
 
 	const onSaveClicked = () => {
-		if (editMode) {
+		if (editMode && selectedCard !== null) {
 			cardStore.update({
 				front: cardFront,
 				back: cardBack,
 				deckId: folderId,
 				id: cardId,
+                lastRepetition: selectedCard.lastRepetition,
+                repetitionDate: selectedCard.repetitionDate,
 			});
-		}
-
-		cardStore.add({
-			front: cardFront,
-			back: cardBack,
-			deckId: folderId,
-			id: cardId,
-		});
+		} else {
+			cardStore.add({
+				front: cardFront,
+				back: cardBack,
+				deckId: folderId,
+				id: cardId,
+			});
+        }
 
 		onCloseClicked();
 	};

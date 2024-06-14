@@ -1,25 +1,21 @@
 <script lang="ts">
-	// import type {PageServerData} from './$types';
-	import FolderIcon from "$lib/icons/folder-active.svelte";
-	import DownloadIcon from "$lib/icons/download.svelte";
-	import AddIcon from "$lib/icons/add.svelte";
-	import AddFolderDialog from "$lib/dialogs/add-folder-dialog.svelte";
-	import AddCardDialog from "$lib/dialogs/add-card-dialog.svelte";
-	import { getReadableDate } from "$lib/utils/valueFormatters";
-	import Cookies from "js-cookie";
 	import { goto } from "$app/navigation";
 	import { page } from "$app/stores";
-	import { deckStore } from "$lib/stores/deck-store";
-	import { cardStore } from "$lib/stores/card-store";
-	import { navigationStore } from "$lib/stores/navigation-store";
-	import { onDestroy } from "svelte";
-	import type { Deck } from "$lib/models/deck";
-	import type { Unsubscriber } from "svelte/store";
-	import type {
-		Card,
-		CardDTO,
-	} from "$lib/models/card";
 	import Breadcrumb from "$lib/components/breadcrumb.svelte";
+	import AddCardDialog from "$lib/dialogs/add-card-dialog.svelte";
+	import AddFolderDialog from "$lib/dialogs/add-folder-dialog.svelte";
+	import AddIcon from "$lib/icons/add.svelte";
+	import DownloadIcon from "$lib/icons/download.svelte";
+	import FolderIcon from "$lib/icons/folder-active.svelte";
+	import type { Card } from "$lib/models/card";
+	import type { Deck } from "$lib/models/deck";
+	import { cardStore } from "$lib/stores/card-store";
+	import { deckStore } from "$lib/stores/deck-store";
+	import { navigationStore } from "$lib/stores/navigation-store";
+	import { getReadableDate } from "$lib/utils/valueFormatters";
+	import Cookies from "js-cookie";
+	import { onDestroy } from "svelte";
+	import type { Unsubscriber } from "svelte/store";
 
 	$: deckId = $page.params.deckId;
 
@@ -28,7 +24,7 @@
 	let unsubscribeDeckStore: Unsubscriber;
 	let unsubscribeCardStore: Unsubscriber;
 
-	let selectedCard: CardDTO | null = null;
+	let selectedCard: Card | null = null;
 
 	$: {
 		unsubscribeDeckStore = deckStore.subscribe(() => {
@@ -76,7 +72,7 @@
 
 	};
 
-	const onRowItemClicked = (clickedRowItem: CardDTO) => {
+	const onRowItemClicked = (clickedRowItem: Card) => {
 		selectedCard = clickedRowItem;
 		showAddCardDialog = true;
 	};
@@ -145,11 +141,7 @@
                 {:then cards}
                     {#each cards as card (card.id)}
                         <tr
-                            on:click={() => onRowItemClicked({
-                                front: card.front,
-                                back: card.back,
-                                id: card.id,
-                            })}
+                            on:click={() => onRowItemClicked(card)}
                         >
                             <td>{card.front}</td>
                             <td>{card.back}</td>
