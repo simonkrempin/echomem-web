@@ -7,6 +7,8 @@
 	import AddIcon from "$lib/icons/add.svelte";
 	import DownloadIcon from "$lib/icons/download.svelte";
 	import FolderIcon from "$lib/icons/folder-active.svelte";
+	import SettingsIcon from "$lib/icons/settings.svelte";
+	import IconButton from "$lib/components/icon-button.svelte";
 	import type { Card } from "$lib/models/card";
 	import type { Deck } from "$lib/models/deck";
 	import { cardStore } from "$lib/stores/card-store";
@@ -14,7 +16,7 @@
 	import { navigationStore } from "$lib/stores/navigation-store";
 	import { getReadableDate } from "$lib/utils/valueFormatters";
 	import Cookies from "js-cookie";
-	import { onDestroy } from "svelte";
+	import { onMount } from "svelte";
 	import type { Unsubscriber } from "svelte/store";
 
 	$: deckId = $page.params.deckId;
@@ -23,8 +25,11 @@
 	let cardQuery: Promise<Card[]>;
 	let unsubscribeDeckStore: Unsubscriber;
 	let unsubscribeCardStore: Unsubscriber;
+	let unsubscribeNavigationStore: Unsubscriber;
 
 	let selectedCard: Card | null = null;
+	let deckToEdit: Deck | undefined = undefined;
+	let editDeck: boolean = false;
 
 	$: {
 		unsubscribeDeckStore = deckStore.subscribe(() => {
@@ -33,22 +38,21 @@
 		unsubscribeCardStore = cardStore.subscribe(() => {
 			cardQuery = cardStore.get(deckId);
 		});
-	}
+		unsubscribeNavigationStore = navigationStore.subscribe((value) => {
+			deckToEdit = value.at(-1);
+		});
+    }
 
-	onDestroy(() => {
-		if (unsubscribeDeckStore) {
+	onMount(() => {
+		return () => {
 			unsubscribeDeckStore();
-		}
-		if (unsubscribeCardStore) {
 			unsubscribeCardStore();
-		}
-	});
+			unsubscribeNavigationStore();
+        }
+    });
 
 	const onDeckClicked = (deck: Deck) => {
-		navigationStore.add({
-			folderId: deck.id,
-			name: deck.name,
-		});
+		navigationStore.add(deck);
 		goto(`/explorer/${deck.id}`);
 	};
 
@@ -68,6 +72,11 @@
 		showAddCardDialog = true;
 	};
 
+	const onSettingsClicked = () => {
+        editDeck = true;
+		showAddDeckDialog = true;
+    }
+
 	const onDownloadDeckClicked = () => {
 
 	};
@@ -81,12 +90,16 @@
 <section>
     <div class="account-bar">
         <Breadcrumb />
-        <button
-                class="icon-button"
+        {#if deckToEdit != null}
+            <IconButton
+                    icon={SettingsIcon}
+                    on:click={onSettingsClicked}
+            />
+        {/if}
+        <IconButton
+                icon={DownloadIcon}
                 on:click={onDownloadDeckClicked}
-        >
-            <DownloadIcon />
-        </button>
+        />
         <button
                 class="account-button"
                 on:click={onAccountClicked}
@@ -141,7 +154,7 @@
                 {:then cards}
                     {#each cards as card (card.id)}
                         <tr
-                            on:click={() => onRowItemClicked(card)}
+                                on:click={() => onRowItemClicked(card)}
                         >
                             <td>{card.front}</td>
                             <td>{card.back}</td>
@@ -165,8 +178,10 @@
 { #if showAddDeckDialog }
     <AddFolderDialog
             bind:show={showAddDeckDialog}
+            bind:editMode={editDeck}
             title="Deck hinzufügen"
             folderId={deckId}
+            deck={deckToEdit}
     />
 {/if}
 { #if showAddCardDialog }
@@ -252,6 +267,8 @@
         display: flex;
         justify-content: right;
         width: 100%;
+        align-items: center;
+        gap: 8px;
     }
 
     .account-button {

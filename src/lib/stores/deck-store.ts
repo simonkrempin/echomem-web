@@ -1,6 +1,10 @@
 import {writable} from "svelte/store";
 import type {Deck, DeckDTO} from "$lib/models/deck";
-import {createDeck, getDecks} from "$lib/services/directory";
+import {
+    createDeck,
+    getDecks,
+    updateDeck,
+} from "$lib/services/directory";
 
 
 function createDeckStore() {
@@ -17,6 +21,12 @@ function createDeckStore() {
                 return value = !value;
             });
         },
+        async update(deck: Deck) {
+            await updateDeck(deck);
+            update((value) => {
+                return value = !value;
+            })
+        }
     };
 }
 

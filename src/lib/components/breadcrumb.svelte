@@ -3,14 +3,14 @@
 	import ChevronRightIcon from "$lib/icons/chevron-right.svelte";
 	import HomeIconActive from "$lib/icons/home-active.svelte";
 	import HomeIcon from "$lib/icons/home.svelte";
+	import type { Deck } from "$lib/models/deck";
 	import { navigationStore } from "$lib/stores/navigation-store";
-	import type { NavigationItem } from "$lib/types/navigation-types";
 	import { onMount } from "svelte";
 	import type { Unsubscriber } from "svelte/store";
 	import IconButton from "./icon-button.svelte";
 
 	let unsubscribeNavigationStore: Unsubscriber;
-	let segments: NavigationItem[] = [];
+	let segments: Deck[] = [];
 
 	onMount(() => {
 		const handlePopState = () => {
@@ -21,7 +21,7 @@
 			segments = value;
 		});
 
-		if (/\/explorer\/([a-zA-Z0-9]+)/.exec(window.location.pathname)?.[1] !== segments.at(-1)?.folderId) {
+		if (/\/explorer\/([a-zA-Z0-9]+)/.exec(window.location.pathname)?.[1] !== segments.at(-1)?.id) {
 		    navigationStore.loadPathFromUrl(window.location.pathname);
         }
 
@@ -49,8 +49,8 @@
             <button
                 class="navigate_button"
                 on:click={() => {
-                    navigationStore.navigateBackTo(segment.folderId);
-                    goto(`/explorer/${segment.folderId}`);
+                    navigationStore.navigateBackTo(segment.id);
+                    goto(`/explorer/${segment.id}`);
                 }}
             >
                 {segment.name}

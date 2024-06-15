@@ -1,16 +1,20 @@
 <script lang="ts">
+	import type { Deck } from "$lib/models/deck";
 	import { onMount } from "svelte";
 	import WithTitle from "../components/with-title.svelte";
 	import CloseIcon from "$lib/icons/close.svelte";
 	import IconButton from "$lib/components/icon-button.svelte";
 	import { generateRandomString } from "../utils/generateRandomString";
 	import { deckStore } from "$lib/stores/deck-store";
+	import { navigationStore } from "$lib/stores/navigation-store";
 
 	export let show: boolean;
 	export let title: string = "Dialog";
 	export let folderId: string;
+	export let editMode: boolean;
+	export let deck: Deck | undefined;
 
-	let folderName: string = "";
+	let folderName: string = editMode && !!deck ? deck.name : "";
 
 	let folderInput: HTMLInputElement;
 	let folderInputFocused: boolean = false;
@@ -18,14 +22,27 @@
 	const onCloseClicked = () => {
 		folderName = "";
 		show = false;
+		editMode = false;
 	};
 
 	const onSaveClicked = () => {
-		deckStore.add({
-			name: folderName,
-			parentDeck: folderId,
-			id: generateRandomString(8),
-		});
+		if (editMode && deck !== undefined) {
+			const updatedDeck = {
+				name: folderName,
+				parentDeck: deck.parentDeck,
+				id: deck.id,
+			};
+
+			deckStore.update(updatedDeck);
+			navigationStore.updateLastEntry(updatedDeck);
+        } else {
+			deckStore.add({
+				name: folderName,
+				parentDeck: folderId,
+				id: generateRandomString(8),
+			});
+        }
+
 		onCloseClicked();
 	};
 

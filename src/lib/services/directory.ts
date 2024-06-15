@@ -1,5 +1,4 @@
 import { ROOT_FOLDER_ID } from "$lib";
-import type { NavigationItem } from "$lib/types/navigation-types";
 import console from "console";
 import Cookies from "js-cookie";
 import type {
@@ -177,6 +176,22 @@ export const createCard = async (cardToCreate: CardDTO): Promise<void> => {
 	});
 };
 
+export const updateDeck = async (deck: Deck): Promise<void> => {
+	const store = await getSaveStore(DECK_STORE);
+	const request = store.put(deck);
+
+	return new Promise((resolve, reject) => {
+		request.onsuccess = () => {
+			delete deckCache[deck.id];
+			resolve();
+		};
+
+		request.onerror = () => {
+			reject()
+		};
+	});
+}
+
 export const updateCard = async (cardToUpdate: CardDTO): Promise<void> => {
 	const store = await getSaveStore(CARD_STORE);
 	const request = store.put(cardToUpdate);
@@ -194,22 +209,19 @@ export const updateCard = async (cardToUpdate: CardDTO): Promise<void> => {
 	});
 };
 
-export const getFolderPath = async (folderId: string): Promise<NavigationItem[]> => {
-	const result: NavigationItem[] = [];
+export const getDeckPath = async (folderId: string): Promise<Deck[]> => {
+	const result: Deck[] = [];
 
 	if (folderId === ROOT_FOLDER_ID) {
 		return result;
 	}
 
-	let folder: Deck | undefined;
+	let deck: Deck | undefined;
 
 	do {
-		folder = await getDeck(folderId);
-		result.push({
-			folderId: folder.id,
-			name: folder.name,
-		});
-		folderId = folder.parentDeck;
+		deck = await getDeck(folderId);
+		result.push(deck);
+		folderId = deck.parentDeck;
 	} while (folderId !== ROOT_FOLDER_ID);
 
 	return result.reverse();
