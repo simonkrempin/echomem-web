@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconButton from "$lib/components/icon-button.svelte";
 	import CloseIcon from "$lib/icons/close.svelte";
 	import type { Card } from "$lib/models/card";
 	import { cardStore } from "$lib/stores/card-store";
@@ -39,8 +40,8 @@
 				back: cardBack,
 				deckId: folderId,
 				id: cardId,
-                lastRepetition: selectedCard.lastRepetition,
-                repetitionDate: selectedCard.repetitionDate,
+				lastRepetition: selectedCard.lastRepetition,
+				repetitionDate: selectedCard.repetitionDate,
 			});
 		} else {
 			cardStore.add({
@@ -49,7 +50,7 @@
 				deckId: folderId,
 				id: cardId,
 			});
-        }
+		}
 
 		onCloseClicked();
 	};
@@ -78,12 +79,10 @@
     <div class="dialog">
         <header>
             <h3>{title}</h3>
-            <button
-                    class="icon-button"
+            <IconButton
+                    icon={CloseIcon}
                     on:click={onCloseClicked}
-            >
-                <CloseIcon />
-            </button>
+            />
         </header>
         <div class="content">
             <WithTitle title="Vorderseite">

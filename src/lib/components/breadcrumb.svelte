@@ -7,8 +7,7 @@
 	import type { NavigationItem } from "$lib/types/navigation-types";
 	import { onMount } from "svelte";
 	import type { Unsubscriber } from "svelte/store";
-
-	let homeHovered: boolean = false;
+	import IconButton from "./icon-button.svelte";
 
 	let unsubscribeNavigationStore: Unsubscriber;
 	let segments: NavigationItem[] = [];
@@ -36,21 +35,14 @@
 </script>
 
 <div class="breadcrumb">
-    <button
-            id="home_button"
-            on:mouseenter={() => homeHovered = true}
-            on:mouseleave={() => homeHovered = false}
-            on:click={() => {
-                navigationStore.home();
-                goto("/explorer");
-            }}
-    >
-        {#if homeHovered}
-            <HomeIconActive />
-        {:else}
-            <HomeIcon />
-        {/if}
-    </button>
+    <IconButton
+        icon={HomeIcon}
+        hoveredIcon={HomeIconActive}
+        on:click={() => {
+            navigationStore.home()
+            goto("/explorer");
+        }}
+    />
     {#each segments as segment}
         <div class="segment">
             <ChevronRightIcon />
@@ -75,21 +67,6 @@
         background-color: #f5f5f5;
         padding: 8px;
         align-items: center;
-    }
-
-    #home_button {
-        background-color: transparent;
-        border: none;
-        width: 34px;
-        height: 34px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    #home_button:hover {
-        background-color: #e2e2e6;
-        border-radius: 50%;
     }
 
     .segment {

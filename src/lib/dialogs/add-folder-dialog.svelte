@@ -2,6 +2,7 @@
 	import { onMount } from "svelte";
 	import WithTitle from "../components/with-title.svelte";
 	import CloseIcon from "$lib/icons/close.svelte";
+	import IconButton from "$lib/components/icon-button.svelte";
 	import { generateRandomString } from "../utils/generateRandomString";
 	import { deckStore } from "$lib/stores/deck-store";
 
@@ -60,12 +61,10 @@
     <div class="dialog">
         <header>
             <h3>{title}</h3>
-            <button
-                class="icon-button"
+            <IconButton
+                icon={CloseIcon}
                 on:click={onCloseClicked}
-            >
-                <CloseIcon />
-            </button>
+            />
         </header>
         <div class="content">
             <WithTitle title="Ordner Name">
