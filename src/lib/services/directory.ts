@@ -227,7 +227,7 @@ export const getDeckPath = async (folderId: string): Promise<Deck[]> => {
 	return result.reverse();
 };
 
-export const getQuestionsToLearn = async (): Promise<Card[]> => {
+export const getQuestionsToLearn = async (folderIdFilter?: string): Promise<Card[]> => {
 	const store = await getSaveStore(CARD_STORE);
 	const index = store.index(Indexes.repetitionDate);
 
@@ -243,6 +243,10 @@ export const getQuestionsToLearn = async (): Promise<Card[]> => {
 			const cursor = event.target!.result;
 
 			if (cursor && count < 10) {
+				if (folderIdFilter && cursor.value.deckId !== folderIdFilter) {
+					return cursor.continue();
+				}
+
 				result.push(cursor.value);
 				count += 1;
 				cursor.continue();
@@ -292,4 +296,17 @@ export const cardIncorrect = async (card: Card): Promise<void> => {
 	card.repetitionDate = new Date().toISOString().split("T")[0];
 	card.lastRepetition = 0;
 	return updateEntry(CARD_STORE, Indexes.id, card);
+}
+
+export const getAllDecks = async (): Promise<Deck[]> => {
+	const request = await queryDB(DECK_STORE, Indexes.id);
+	return new Promise((resolve, reject) => {
+		request.onsuccess = (event) => {
+			resolve((event.target! as IDBRequest).result);
+		};
+
+		request.onerror = () => {
+			reject();
+		};
+	});
 }

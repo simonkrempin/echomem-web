@@ -1,26 +1,43 @@
 <script lang="ts">
 	import type { Card } from "$lib/models/card";
+	import type { Deck } from "$lib/models/deck";
 	import {
 		cardCorrect,
 		cardIncorrect,
+		getAllDecks,
 		getQuestionsToLearn,
 	} from "$lib/services/directory";
 	import { onMount } from "svelte";
+	import TuneIcon from "$lib/icons/tune.svelte";
 
 	let showSolution = false;
 	let currentQuestion: Card | undefined;
 	let questionBacklog: Card[] = [];
 
+	let selectedFilter: string | undefined = undefined;
+	let selectFilter: boolean = false;
+	let possibleFilters: Deck[] = [];
+
 	onMount(() => {
-		getQuestionsToLearn()
+		getAllDecks()
+			.then(decks => possibleFilters = decks)
+			.catch(() => {
+				console.error("Error in getting all decks");
+			});
+	});
+
+	$: {
+		getQuestionsToLearn(selectedFilter)
 			.then(questions => {
 				questionBacklog = questions;
 				if (questionBacklog.length > 0) {
 					currentQuestion = questionBacklog.shift();
-				}
+				} else {
+					currentQuestion = undefined;
+                }
 			})
 			.catch(error => console.error(error));
-	});
+	}
 
 	function getNextQuestion() {
 		// shift is a slow operation, maybe needs improvement in the future by reversing the array.
@@ -28,7 +45,7 @@
 
 		// I wonder what will happen if the shift happens after this.
 		if (questionBacklog.length <= 3) {
-			getQuestionsToLearn()
+			getQuestionsToLearn(selectedFilter)
 				.then(questions => questionBacklog.push(...questions))
 				.catch(error => console.error("uncaught error, please fix", error));
 		}
@@ -41,7 +58,7 @@
 
 		if (currentQuestion === undefined) {
 			return;
-        }
+		}
 
 		void cardIncorrect(currentQuestion);
 		currentQuestion = getNextQuestion();
@@ -51,8 +68,8 @@
 		showSolution = false;
 
 		if (currentQuestion === undefined) {
-		    return;
-        }
+			return;
+		}
 
 		void cardCorrect(currentQuestion);
 		currentQuestion = getNextQuestion();
@@ -60,6 +77,43 @@
 </script>
 
 <section>
+    <div class="filter_container">
+        <button
+                on:click={() => selectFilter = !selectFilter}
+                class="filter_button"
+        >
+            <TuneIcon />
+            Filter
+        </button>
+        {#if selectFilter}
+            <div class="filter_selection">
+                {#each possibleFilters as filter}
+                    <button
+                            class="filter_selection_button"
+                            on:click={() => {
+                                selectedFilter = filter.id;
+                                selectFilter = false;
+                            }}
+                    >
+                        {filter.name}
+                    </button>
+                {:else}
+                    <p>Keine Filter</p>
+                {/each}
+                {#if selectedFilter !== undefined}
+                    <button
+                            class="filter_selection_button"
+                            on:click={() => {
+                                selectedFilter = undefined;
+                                selectFilter = false;
+                            }}
+                    >
+                        Filter löschen
+                    </button>
+                {/if}
+            </div>
+        {/if}
+    </div>
     {#if currentQuestion !== undefined}
         <button
                 class="unknown_button"
@@ -142,5 +196,38 @@
     button:hover {
         background-color: #b4b4b4;
         transform: scale(1.05);
+    }
+
+    .filter_button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .filter_container {
+        position: absolute;
+        top: 32px;
+        right: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+    }
+
+    .filter_selection {
+        display: flex;
+        background-color: #f5f5f5;
+        border-radius: 12px;
+        width: 150px;
+        padding: 8px;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter_selection_button {
+        width: 100%;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        background-color: transparent;
     }
 </style>
