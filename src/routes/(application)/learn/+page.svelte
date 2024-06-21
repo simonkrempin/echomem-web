@@ -9,6 +9,7 @@
 	} from "$lib/services/directory";
 	import { onMount } from "svelte";
 	import TuneIcon from "$lib/icons/tune.svelte";
+	import Button from "$lib/components/button.svelte";
 
 	let showSolution = false;
 	let currentQuestion: Card | undefined;
@@ -30,11 +31,7 @@
 		getQuestionsToLearn(selectedFilter)
 			.then(questions => {
 				questionBacklog = questions;
-				if (questionBacklog.length > 0) {
-					currentQuestion = questionBacklog.shift();
-				} else {
-					currentQuestion = undefined;
-                }
+				currentQuestion = questionBacklog.length > 0 ? questionBacklog.shift() : undefined;
 			})
 			.catch(error => console.error(error));
 	}
@@ -78,13 +75,12 @@
 
 <section>
     <div class="filter_container">
-        <button
-                on:click={() => selectFilter = !selectFilter}
-                class="filter_button"
-        >
-            <TuneIcon />
-            Filter
-        </button>
+        <Button
+            on:click={() => selectFilter = !selectFilter}
+            icon={TuneIcon}
+            text={"Filter"}
+            type="secondary"
+        />
         {#if selectFilter}
             <div class="filter_selection">
                 {#each possibleFilters as filter}
@@ -196,12 +192,6 @@
     button:hover {
         background-color: #b4b4b4;
         transform: scale(1.05);
-    }
-
-    .filter_button {
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
 
     .filter_container {

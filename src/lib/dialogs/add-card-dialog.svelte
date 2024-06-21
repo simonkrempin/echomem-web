@@ -6,6 +6,7 @@
 	import { generateRandomString } from "$lib/utils/generateRandomString";
 	import { onMount } from "svelte";
 	import WithTitle from "../components/with-title.svelte";
+	import Button from "$lib/components/button.svelte";
 
 	export let show: boolean;
 	export let title: string = "Dialog";
@@ -102,16 +103,16 @@
             </WithTitle>
         </div>
         <footer>
-            <button
-                    class="text-button"
-                    on:click={onCloseClicked}
-            >Abbrechen
-            </button>
-            <button
-                    class="primary-button"
-                    on:click={onSaveClicked}
-            >Speichern
-            </button>
+            <Button
+                on:click={onCloseClicked}
+                text="Abbrechen"
+                type="text"
+            />
+            <Button
+                on:click={onSaveClicked}
+                text="Speichern"
+                type="primary"
+            />
         </footer>
     </div>
 </div>
