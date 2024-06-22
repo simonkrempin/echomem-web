@@ -69,7 +69,7 @@
 			unsubscribeDeckStore();
 			unsubscribeCardStore();
 			unsubscribeNavigationStore();
-			window.removeEventListener(shortCuts);
+			window.removeEventListener("keydown", shortCuts);
         }
     });
 

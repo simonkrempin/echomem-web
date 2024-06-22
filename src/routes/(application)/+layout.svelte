@@ -23,14 +23,14 @@
 
 <main>
     <section
-            class:section__collapsed={isMinimized}
+        class:section__collapsed={isMinimized}
     >
         <h2>{isMinimized ? "E" : "Echomem"}</h2>
         <button
-                class="tab_button"
-                class:minimize_button={isMinimized}
-                class:minimized_button={isMinimized}
-                on:click={() => {
+            class="tab_button"
+            class:minimize_button={isMinimized}
+            class:minimized_button={isMinimized}
+            on:click={() => {
                 onTabSelected(0);
                 goto("/explorer");
             }}
@@ -43,10 +43,10 @@
             { isMinimized ? "" : "Folder"}
         </button>
         <button
-                class="tab_button"
-                class:minimize_button={isMinimized}
-                class:minimized_button={isMinimized}
-                on:click={() => {
+            class="tab_button"
+            class:minimize_button={isMinimized}
+            class:minimized_button={isMinimized}
+            on:click={() => {
                 onTabSelected(1);
                 goto("/learn");
             }}
@@ -59,10 +59,10 @@
             { isMinimized ? "" : "Learn"}
         </button>
         <button
-                class="tab_button"
-                class:minimize_button={isMinimized}
-                class:minimized_button={isMinimized}
-                on:click={() => {
+            class="tab_button"
+            class:minimize_button={isMinimized}
+            class:minimized_button={isMinimized}
+            on:click={() => {
                 onTabSelected(2);
                 goto("/school");
             }}
@@ -76,9 +76,9 @@
         </button>
         <div style="flex: 1;" />
         <button
-                class="minimize_button"
-                class:minimized_button={isMinimized}
-                on:click={() => {isMinimized = !isMinimized;}}
+            class="minimize_button"
+            class:minimized_button={isMinimized}
+            on:click={() => {isMinimized = !isMinimized;}}
         >
             {#if isMinimized}
                 <LeftPanelOpen />
