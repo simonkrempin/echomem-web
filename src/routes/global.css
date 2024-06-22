@@ -1,7 +1,12 @@
+:root {
+    --background-color: #e3e3e3;
+}
+
 body {
     height: calc(100vh - 32px);
     padding: 16px;
     margin: 0;
+    background-color: var(--background-color);
 }
 
 section {
