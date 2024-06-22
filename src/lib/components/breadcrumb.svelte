@@ -64,7 +64,7 @@
         display: flex;
         width: 100%;
         border-radius: 100px;
-        background-color: #f5f5f5;
+        background-color: white;
         padding: 8px;
         align-items: center;
     }

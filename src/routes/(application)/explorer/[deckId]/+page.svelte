@@ -105,72 +105,74 @@
                 on:click={onAccountClicked}
         ></button>
     </div>
-    <div id="decks">
-        {#await deckQuery}
-            Loading...
-        {:then decks}
-            {#each decks as deck (deck.id)}
-                <button
+    <div class="content">
+        <div id="decks">
+            {#await deckQuery}
+                Loading...
+            {:then decks}
+                {#each decks as deck (deck.id)}
+                    <button
                         class="deck"
                         on:click={() => onDeckClicked(deck)}
-                >
-                    <FolderIcon
+                    >
+                        <FolderIcon
                             height={60}
                             width={60}
-                    />
-                    {deck.name}
-                </button>
-            {/each}
-            <button
+                        />
+                        {deck.name}
+                    </button>
+                {/each}
+                <button
                     class="deck"
                     on:click={onAddDeckClicked}
-            >
-                <AddIcon
+                >
+                    <AddIcon
                         height={60}
                         width={60}
-                />
-                Deck hinzufügen
-            </button>
-        {:catch error}
-            Error on fetching data {error}
-        {/await}
-    </div>
-    <div class="cut_scrollbar">
-        <div class="cards">
-            <table>
-                <thead>
-                <tr>
-                    <th scope="col">Front</th>
-                    <th scope="col">Back</th>
-                    <th
+                    />
+                    Deck hinzufügen
+                </button>
+            {:catch error}
+                Error on fetching data {error}
+            {/await}
+        </div>
+        <div class="cut_scrollbar">
+            <div class="cards">
+                <table>
+                    <thead>
+                    <tr>
+                        <th scope="col">Front</th>
+                        <th scope="col">Back</th>
+                        <th
                             scope="col"
                             id="next-repetition"
-                    >Next Repetition
-                    </th>
-                </tr>
-                </thead>
-                {#await cardQuery}
-                    Loading...
-                {:then cards}
-                    {#each cards as card (card.id)}
-                        <tr
+                        >Next Repetition
+                        </th>
+                    </tr>
+                    </thead>
+                    {#await cardQuery}
+                        Loading...
+                    {:then cards}
+                        {#each cards as card (card.id)}
+                            <tr
                                 on:click={() => onRowItemClicked(card)}
-                        >
-                            <td>{card.front}</td>
-                            <td>{card.back}</td>
-                            <td>{getReadableDate(card.repetitionDate)}</td>
-                        </tr>
-                    {/each}
-                {:catch error}
-                    Error on fetching data {error}
-                {/await}
-                <button
+                            >
+                                <td>{card.front}</td>
+                                <td>{card.back}</td>
+                                <td>{getReadableDate(card.repetitionDate)}</td>
+                            </tr>
+                        {/each}
+                    {:catch error}
+                        Error on fetching data {error}
+                    {/await}
+                    <button
                         class="add-card-fab"
                         on:click={onAddCardClicked}
-                >
-                    <AddIcon />
-                </button>
-            </table>
+                    >
+                        <AddIcon />
+                    </button>
+                </table>
+            </div>
         </div>
     </div>
 </section>
@@ -196,7 +198,6 @@
 
 <style>
     section {
-        padding: 0 16px;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -213,8 +214,8 @@
 
     .deck {
         border: none;
-        background: #f5f5f5;
-        border-radius: 16px;
+        background: var(--background-color);
+        border-radius: 12px;
         width: 200px;
         height: 200px;
         display: flex;
@@ -226,15 +227,15 @@
     .cards {
         flex: 1;
         overflow-y: auto;
-        background: #f5f5f5;
-        border-radius: 16px;
+        background: var(--background-color);
+        border-radius: 12px;
     }
 
     .cut_scrollbar {
         overflow: hidden;
         display: flex;
         flex: 1;
-        border-radius: 16px;
+        border-radius: 12px;
     }
 
     table {
@@ -290,5 +291,16 @@
         display: flex;
         justify-content: center;
         align-items: center;
+    }
+
+    .content {
+        border-radius: 12px;
+        background-color: white;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        gap: 12px;
     }
 </style>

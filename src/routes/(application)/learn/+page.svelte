@@ -152,6 +152,8 @@
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
+        border-radius: 16px;
+        background-color: white;
     }
 
     div {
