@@ -44,10 +44,32 @@
     }
 
 	onMount(() => {
+		const shortCuts = (event: KeyboardEvent) => {
+			if (
+				!event.altKey
+                || showAddCardDialog
+                || showAddDeckDialog
+            ) {
+				return;
+            }
+
+			switch (event.key) {
+                case "n":
+					onAddDeckClicked();
+					break;
+                case "m":
+					onAddCardClicked();
+					break;
+            }
+        }
+
+		window.addEventListener("keydown", shortCuts)
+
 		return () => {
 			unsubscribeDeckStore();
 			unsubscribeCardStore();
 			unsubscribeNavigationStore();
+			window.removeEventListener(shortCuts);
         }
     });
 
